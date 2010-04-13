@@ -70,8 +70,8 @@ namespace Lokad.Forecasting.Client
 			_forecastingApi = new ForecastingApi(endpoint);
 		}
 
-		/// <summary>For testing only.</summary>
-		internal ForecastingClient(string identity, IForecastingApi forecastingApi)
+		/// <summary>Access to the underlying client implementation.</summary>
+		public ForecastingClient(string identity, IForecastingApi forecastingApi)
 		{
 			_identity = identity;
 			_forecastingApi = forecastingApi;
