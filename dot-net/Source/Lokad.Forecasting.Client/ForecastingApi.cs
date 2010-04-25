@@ -84,9 +84,9 @@ namespace Lokad.Forecasting.Client
 			return RetryPolicy(() => _channel.DeleteTimeSeries(identity, datasetName, serieNames));
 		}
 
-		public ForecastStatus GetForecastsStatus(string identity, string datasetName)
+		public ForecastStatus GetForecastStatus(string identity, string datasetName)
 		{
-			return RetryPolicy(() => _channel.GetForecastsStatus(identity, datasetName));
+			return RetryPolicy(() => _channel.GetForecastStatus(identity, datasetName));
 		}
 
 		public ForecastCollection GetForecasts(string identity, string datasetName, string[] serieNames)

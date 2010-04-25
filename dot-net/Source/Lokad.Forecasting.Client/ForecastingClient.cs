@@ -290,7 +290,7 @@ namespace Lokad.Forecasting.Client
 		/// with the Forecasting API specification.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if the access rights are incorrect,
 		/// if the dataset does not exists, or if the service is down.</exception>
-		/// <seealso cref="IForecastingApi.GetForecastsStatus"/>
+		/// <seealso cref="IForecastingApi.GetForecastStatus"/>
 		/// <seealso cref="IForecastingApi.GetForecasts"/>
 		public ForecastSerie[] GetForecasts(string datasetName, string[] serieNames)
 		{
@@ -304,7 +304,7 @@ namespace Lokad.Forecasting.Client
 					Thread.Sleep(30 * 1000); // 30s sleep between checks while waiting for the forecasts
 				}
 
-				status = _forecastingApi.GetForecastsStatus(_identity, datasetName);
+				status = _forecastingApi.GetForecastStatus(_identity, datasetName);
 
 				WrapAndThrow(status.ErrorCode);
 
