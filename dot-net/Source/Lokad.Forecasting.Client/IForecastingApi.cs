@@ -472,7 +472,7 @@ namespace Lokad.Forecasting.Client
 
 		/// <summary>Forecasted time-values (with accuracy measurements). </summary>
 		[DataMember]
-		public ForecastValue[] ForecastValues { get; set; }
+		public ForecastValue[] Values { get; set; }
 	}
 
 	/// <seealso cref="IForecastingApi.GetForecasts"/>
