@@ -255,7 +255,7 @@ namespace Lokad.Forecasting.Client
 		/// </ul>
 		/// </returns>
 		[OperationContract]
-		ForecastStatus GetForecastsStatus(string identity, string datasetName);
+		ForecastStatus GetForecastStatus(string identity, string datasetName);
 
 		/// <summary>
 		/// Retrieves the forecasts from a dataset of a Lokad account.
@@ -436,7 +436,7 @@ namespace Lokad.Forecasting.Client
 		public DateTime KnownSince { get; set; }
 	}
 
-	/// <seealso cref="IForecastingApi.GetForecastsStatus"/>
+	/// <seealso cref="IForecastingApi.GetForecastStatus"/>
 	[DataContract(Namespace = Constants.Namespace)]
 	public class ForecastStatus
 	{
