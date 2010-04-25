@@ -202,7 +202,7 @@ namespace Lokad.Forecasting.Client.Tests
 			{
 				api = mocks.StrictMock<IForecastingApi>();
 
-				Expect.Call(api.GetForecastsStatus(identity, datasetName))
+				Expect.Call(api.GetForecastStatus(identity, datasetName))
 					.Return(new ForecastStatus
 					        	{
 					        		ForecastsReady = true
