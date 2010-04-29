@@ -66,6 +66,7 @@
     <Compile Include="ForecastingApi.cs" />
     <Compile Include="ForecastingApiValidators.cs" />
     <Compile Include="ForecastingClient.cs" />
+    <Compile Include="ForecastingClientExtensions.cs" />
     <Compile Include="IForecastingApi.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
