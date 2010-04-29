@@ -92,6 +92,11 @@
 			<Output ItemName="sourceFiles" TaskParameter="Include" />
 		</CreateItem>
 		<Zip Files="@(sourceFiles)" ZipFileName="$(PackageDirectory)\$(ProjectName)-Source-$(Version).zip" Flatten="false" />
+		
+		<!-- Update template download page -->
+		<Copy SourceFiles="Resource\Files\index.template;" DestinationFolder="$(TempPath)" />
+		<TemplateFile Template="$(TempPath)\index.template" OutputFile="index.out" Tokens="@(Tokens)" />
+		<Copy SourceFiles="$(TempPath)\index.out" DestinationFiles="$(PublicationRoot)\index.htm" />
 	</Target>
 
 	<!--For Continuous integration and automated releases-->
