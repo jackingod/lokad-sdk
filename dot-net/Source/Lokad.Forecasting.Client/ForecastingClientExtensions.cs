@@ -33,6 +33,20 @@ namespace Lokad.Forecasting.Client
             client.UpsertTimeSeries(dataset.Name, timeSeries, merge);
         }
 
+        /// <summary>Delete multiple time-series from a dataset.</summary>
+        public static void DeleteTimeSeries(
+            this ForecastingClient client, string datasetName, TimeSerie[] timeSeries)
+        {
+            client.DeleteTimeSeries(datasetName, timeSeries.Select(ts => ts.Name).ToArray());
+        }
+
+        /// <summary>Delete multiple time-series from a dataset.</summary>
+        public static void DeleteTimeSeries(
+            this ForecastingClient client, Dataset dataset, TimeSerie[] timeSeries)
+        {
+            client.DeleteTimeSeries(dataset.Name, timeSeries.Select(ts => ts.Name).ToArray());
+        }
+
         /// <summary>Gets a single forecasted series.</summary>
         public static ForecastSerie GetForecast(
             this ForecastingClient client, string datasetName, TimeSerie timeSerie)
