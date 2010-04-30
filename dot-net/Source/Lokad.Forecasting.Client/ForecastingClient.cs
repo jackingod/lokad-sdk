@@ -208,6 +208,11 @@ namespace Lokad.Forecasting.Client
 		{
 			ValidateSerieNames(datasetName, timeSeries.Select(t => t.Name).ToArray());
 
+            foreach(var ts in timeSeries)
+            {
+                ts.Validate();
+            }
+
 			// When uploading series toward Lokad, requests should not weight more than 4MB
 			// Instead of trying to figure out complex corner situation, we just deal with
 			// series of varying sizes separately.
