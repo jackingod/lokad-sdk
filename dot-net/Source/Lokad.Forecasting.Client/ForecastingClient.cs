@@ -289,7 +289,7 @@ namespace Lokad.Forecasting.Client
 		/// Deletes the specified time-series from a dataset.
 		/// Time-series that do not exist are ignored.
 		/// </summary>
-		/// <param name="datasetName">Targeted datasets.</param>
+		/// <param name="datasetName">Targeted dataset.</param>
 		/// <param name="serieNames">Series to be deleted.</param>
 		/// <exception cref="ArgumentNullException">Thrown if one of the argument is null.</exception>
 		/// <exception cref="ArgumentException">Thrown if the arguments are not compliant
@@ -311,6 +311,23 @@ namespace Lokad.Forecasting.Client
 				WrapAndThrow(errorCode);
 			}
 		}
+
+        /// <summary>Trigger the forecast computation. No need to 
+        /// call this method (<see cref="GetForecasts"/>) unless
+        /// you want to avoid your <c>GetForecasts</c> call being 
+        /// blocked waiting.</summary>
+        /// <remarks>This method can be called many time until the
+        /// forecasts are finally available.</remarks>
+        /// <param name="datasetName">Targeted dataset.</param>
+        /// <returns>Indicates whether the forecasts are ready.</returns>
+        public bool TriggerForecastCompute(string datasetName)
+        {
+            var status = _forecastingApi.GetForecastStatus(_identity, datasetName);
+
+            WrapAndThrow(status.ErrorCode);
+
+            return status.ForecastsReady;
+        }
 
 		/// <summary>
 		/// Gets the forecasts from a specified datasets.
