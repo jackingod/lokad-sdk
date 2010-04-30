@@ -125,7 +125,7 @@ namespace Lokad.Forecasting.Client
 		}
 
 		/// <summary>
-		/// Deletes the datasets specified as arguments from the Lokad account.
+		/// Deletes the dataset specified as arguments from the Lokad account.
 		/// </summary>
 		/// <param name="datasetName">Name of the target dataset.</param>
 		/// <exception cref="ArgumentNullException">Thrown if the argument <c>datasetNames</c> is null.</exception>
@@ -147,6 +147,41 @@ namespace Lokad.Forecasting.Client
 			var errorCode = _forecastingApi.DeleteDataset(_identity, datasetName);
 			WrapAndThrow(errorCode);
 		}
+
+        /// <summary>
+        /// Deletes the dataset specified as argument from the Lokad account,
+        /// and waits until the deletion is effective.
+        /// </summary>
+        /// <remarks>
+        /// This method will connect every 30s to check whether the dataset
+        /// has been deleted until the dataset is finally flagged as "not found".
+        /// </remarks>
+        /// <param name="datasetName">Name of the target dataset.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the argument <c>datasetNames</c> is null.</exception>
+        /// <exception cref="ArgumentException">
+        /// Thrown is the dataset names are not compliant
+        /// with the Forecasting API, or if the names are not distinct.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the access rights are incorrect, or if the service is not available
+        /// at the time.</exception>
+        public void DeleteDatasetAndWait(string datasetName)
+        {
+            DeleteDataset(datasetName);
+
+            TimeSerieCollection collection;
+            while(true)
+            {
+                collection = _forecastingApi.ListTimeSeries(_identity, datasetName, null);
+
+                if(ErrorCodes.DatasetNotFound.Equals(collection.ErrorCode))
+                {
+                    break;
+                }
+
+                Thread.Sleep(30000);
+            }
+        }
 
 		/// <summary>
 		/// Update or inserts time-series into the specified dataset.
