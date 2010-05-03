@@ -16,12 +16,15 @@ namespace Lokad.Forecasting.Client
 	/// transient network or service errors.</remarks>
 	public class ForecastingApi : IForecastingApi, IDisposable
 	{
+        const int MaxMessageSize = 8388608; // 8MB (default message sizes are 64kb)
+
 		readonly ChannelFactory<IForecastingApi> _factory;
 		readonly IForecastingApi _channel;
 
 		public ForecastingApi(string endPoint)
 		{
 			var binding = new BasicHttpBinding();
+            binding.MaxReceivedMessageSize = MaxMessageSize;
 			var address = new EndpointAddress(endPoint);
 
 			_factory = new ChannelFactory<IForecastingApi>(binding, address);
