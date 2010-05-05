@@ -10,6 +10,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Forecasting.Client", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Forecasting.Client.Tests", "Test\Lokad.Forecasting.Client.Tests\Lokad.Forecasting.Client.Tests.csproj", "{DB93AFF3-0B2B-4A15-9DA5-668E830BAB3F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{CAE0E738-ADAD-44CB-ADAA-ACC60643BE09}"
+	ProjectSection(SolutionItems) = preProject
+		Resource\Files\index.template = Resource\Files\index.template
+		Lokad.Forecasting.Client.build = Lokad.Forecasting.Client.build
+		Lokad.Forecasting.Client.ccnet = Lokad.Forecasting.Client.ccnet
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,5 +34,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CAE0E738-ADAD-44CB-ADAA-ACC60643BE09} = {B09BEED3-7CB7-4262-A0FA-AB3B7841546C}
 	EndGlobalSection
 EndGlobal
