@@ -9,13 +9,6 @@ using System.Web.Services;
 
 namespace Lokad.Forecasting.Client
 {
-	/// <summary>Helper for Forecasting API v3.</summary>
-	public static class Constants
-	{
-		/// <summary>Root namespace.</summary>
-		public const string Namespace = "http://schemas.lokad.com/";
-	}
-
 	/// <summary>Forecasting API v3.</summary>
 	[ServiceContract(
 		Namespace = Constants.Namespace,

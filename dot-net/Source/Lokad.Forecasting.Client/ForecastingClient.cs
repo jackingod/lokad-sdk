@@ -14,11 +14,7 @@ namespace Lokad.Forecasting.Client
 	/// away paging and continuation tokens. It also validates the inputs.</remarks>
 	public class ForecastingClient
 	{
-		/// <summary>Compound methods of Forecasting API are nearly
-		/// all upper bounded to collection of 100 items at most.</summary>
-		const int SmallSeriesSliceLength = 100;
-
-        /// <summary>Same than <see cref="SmallSeriesSliceLength"/> but for larger series.</summary>
+		/// <summary>Same than <see cref="Constants.SeriesSliceLength"/> but for larger series.</summary>
         const int MidSeriesSliceLength = 10;
 
 		readonly string _identity;
@@ -247,12 +243,12 @@ namespace Lokad.Forecasting.Client
 			}
 
 			// small series are uploaded 100 by 100
-			for (var i = 0; i < smallSeries.Length; i += SmallSeriesSliceLength)
+			for (var i = 0; i < smallSeries.Length; i += Constants.SeriesSliceLength)
 			{
 				// No 'Slice()' method available 
 				var errorCode =
 					_forecastingApi.UpsertTimeSeries(_identity, datasetName,
-						smallSeries.Skip(i).Take(SmallSeriesSliceLength).ToArray(), enableMerge);
+						smallSeries.Skip(i).Take(Constants.SeriesSliceLength).ToArray(), enableMerge);
 
 				WrapAndThrow(errorCode);
 			}
@@ -309,12 +305,12 @@ namespace Lokad.Forecasting.Client
 		{
 			ValidateSerieNames(datasetName, serieNames);
 
-			for (var i = 0; i < serieNames.Length; i += SmallSeriesSliceLength)
+			for (var i = 0; i < serieNames.Length; i += Constants.SeriesSliceLength)
 			{
 				// No 'Slice()' method available 
 				var errorCode =
 					_forecastingApi.DeleteTimeSeries(_identity, datasetName,
-						serieNames.Skip(i).Take(SmallSeriesSliceLength).ToArray());
+						serieNames.Skip(i).Take(Constants.SeriesSliceLength).ToArray());
 
 				WrapAndThrow(errorCode);
 			}
@@ -376,12 +372,12 @@ namespace Lokad.Forecasting.Client
 			// they can't be retrieved in batches of 100 while still be compliant
 			// with 4MB limitation.
 
-			for (var i = 0; i < serieNames.Length; i += SmallSeriesSliceLength)
+			for (var i = 0; i < serieNames.Length; i += Constants.SeriesSliceLength)
 			{
 				// No 'Slice()' method available 
 				var forecastCollection =
 					_forecastingApi.GetForecasts(_identity, datasetName,
-						serieNames.Skip(i).Take(SmallSeriesSliceLength).ToArray());
+						serieNames.Skip(i).Take(Constants.SeriesSliceLength).ToArray());
 
 				WrapAndThrow(forecastCollection.ErrorCode);
 

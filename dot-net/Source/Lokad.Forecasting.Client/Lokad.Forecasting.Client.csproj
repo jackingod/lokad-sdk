@@ -84,6 +84,7 @@
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Constants.cs" />
     <Compile Include="ForecastingApi.cs" />
     <Compile Include="ForecastingApiValidators.cs" />
     <Compile Include="ForecastingClient.cs" />
