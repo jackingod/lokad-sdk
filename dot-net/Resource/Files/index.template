@@ -14,7 +14,7 @@
 <h2>Downloads</h2>
 <ul>
     <li><a href="${Version}/${BinaryPackage}">Download binaries</a> (.NET 3.5, DLL, PDB, XML).</li>
-	<li><a href="${Version}/${SourcePackage}">Download sources</a> (C#, VS 2008 solution).</li>
+	<li><a href="${Version}/${SourcePackage}">Download sources</a> (C#, VS 2010 solution).</li>
 </ul>
 <h2>Links</h2>
 <ul>
