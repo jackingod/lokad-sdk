@@ -5,7 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
+
+[assembly: InternalsVisibleTo("Lokad.Forecasting.Client.Tests")]
 
 namespace Lokad.Forecasting.Client
 {
@@ -14,8 +17,12 @@ namespace Lokad.Forecasting.Client
 	/// away paging and continuation tokens. It also validates the inputs.</remarks>
 	public class ForecastingClient
 	{
+        /// <summary>Initial value is based on the Forecasting API limitations,
+        /// yet, this value can be lowered if timeouts are encountered.</summary>
+	    int _seriesSliceLength = 100;
+
 		/// <summary>Same than <see cref="Constants.SeriesSliceLength"/> but for larger series.</summary>
-        const int MidSeriesSliceLength = 10;
+       int _midSeriesSliceLength = 10;
 
 		readonly string _identity;
 		readonly IForecastingApi _forecastingApi;
@@ -50,7 +57,7 @@ namespace Lokad.Forecasting.Client
 			var body = bytes.Skip(4).ToArray();
 
 			// body[0] contains the API version
-			// body[1] contains the server (1 = Production, 2 = Sandbox)
+			// body[1] contains the server (was 1 = Production, 2 = Sandbox, but not used anymore)
 
 			// By default, we plug the production.
 			var endpoint = body[1] != 2 ? ProductionEndpoint : SandboxEndpoint;
@@ -205,54 +212,89 @@ namespace Lokad.Forecasting.Client
 		/// <seealso cref="IForecastingApi.UpsertTimeSeries"/>
 		public void UpsertTimeSeries(string datasetName, TimeSerie[] timeSeries, bool enableMerge)
 		{
-			ValidateSerieNames(datasetName, timeSeries.Select(t => t.Name).ToArray());
+            // catching potential network timeouts
+            RetryPolicy(() => 
+            { 
+                UpsertTimeSeriesInternal(datasetName, timeSeries, enableMerge);
+                return ""; // returning a dummy value.
+            });
+		}
 
-            foreach(var ts in timeSeries)
+        void UpsertTimeSeriesInternal(string datasetName, TimeSerie[] timeSeries, bool enableMerge)
+        {
+            ValidateSerieNames(datasetName, timeSeries.Select(t => t.Name).ToArray());
+
+            foreach (var ts in timeSeries)
             {
                 ts.Validate();
             }
 
-			// When uploading series toward Lokad, requests should not weight more than 4MB
-			// Instead of trying to figure out complex corner situation, we just deal with
-			// series of varying sizes separately.
+            // Heuristic: intermediate zeroes can be pruned
+            timeSeries = timeSeries.Select(PruneIntermediateZeroes).ToArray();
 
-			// Splitting series according to their respective sizes
-			var veryLargeSeries = timeSeries.Where(t => t.Values != null && t.Values.Length > 10000).ToArray();
-			var largeSeries = timeSeries.Where(t => t.Values != null && t.Values.Length <= 10000 && t.Values.Length > 1000).ToArray();
-			var smallSeries = timeSeries.Where(t => t.Values == null || t.Values.Length < 1000).ToArray();
+            // When uploading series toward Lokad, requests should not weight more than 4MB
+            // Instead of trying to figure out complex corner situation, we just deal with
+            // series of varying sizes separately.
 
-			// very large series are uploaded 1 by 1
-			for (var i = 0; i < veryLargeSeries.Length; i++)
-			{
-				var errorCode =
-					_forecastingApi.UpsertTimeSeries(_identity, datasetName, 
-						new[]{veryLargeSeries[i]}, enableMerge);
+            // Splitting series according to their respective sizes
+            var veryLargeSeries = timeSeries.Where(t => t.Values != null && t.Values.Length > 10000).ToArray();
+            var largeSeries = timeSeries.Where(t => t.Values != null && t.Values.Length <= 10000 && t.Values.Length > 1000).ToArray();
+            var smallSeries = timeSeries.Where(t => t.Values == null || t.Values.Length < 1000).ToArray();
 
-				WrapAndThrow(errorCode);
-			}
+            // very large series are uploaded 1 by 1
+            for (var i = 0; i < veryLargeSeries.Length; i++)
+            {
+                var errorCode =
+                    _forecastingApi.UpsertTimeSeries(_identity, datasetName,
+                        new[] { veryLargeSeries[i] }, enableMerge);
 
-			// large series are uploaded 10 by 10
-            for (var i = 0; i < largeSeries.Length; i += MidSeriesSliceLength)
-			{
-				// No 'Slice()' method available 
-				var errorCode =
-					_forecastingApi.UpsertTimeSeries(_identity, datasetName,
-                        largeSeries.Skip(i).Take(MidSeriesSliceLength).ToArray(), enableMerge);
+                WrapAndThrow(errorCode);
+            }
 
-				WrapAndThrow(errorCode);
-			}
+            // large series are uploaded 10 by 10
+            for (var i = 0; i < largeSeries.Length; i += _midSeriesSliceLength)
+            {
+                // No 'Slice()' method available 
+                var errorCode =
+                    _forecastingApi.UpsertTimeSeries(_identity, datasetName,
+                        largeSeries.Skip(i).Take(_midSeriesSliceLength).ToArray(), enableMerge);
 
-			// small series are uploaded 100 by 100
-			for (var i = 0; i < smallSeries.Length; i += Constants.SeriesSliceLength)
-			{
-				// No 'Slice()' method available 
-				var errorCode =
-					_forecastingApi.UpsertTimeSeries(_identity, datasetName,
-						smallSeries.Skip(i).Take(Constants.SeriesSliceLength).ToArray(), enableMerge);
+                WrapAndThrow(errorCode);
+            }
 
-				WrapAndThrow(errorCode);
-			}
-		}
+            // small series are uploaded 100 by 100
+            for (var i = 0; i < smallSeries.Length; i += _seriesSliceLength)
+            {
+                // No 'Slice()' method available 
+                var errorCode =
+                    _forecastingApi.UpsertTimeSeries(_identity, datasetName,
+                        smallSeries.Skip(i).Take(_seriesSliceLength).ToArray(), enableMerge);
+
+                WrapAndThrow(errorCode);
+            }
+        }
+
+        internal static TimeSerie PruneIntermediateZeroes(TimeSerie timeSerie)
+        {
+            if(timeSerie.Values == null || timeSerie.Values.Length < 2)
+            {
+                return timeSerie;
+            }
+
+            var values = timeSerie.Values;
+
+            return new TimeSerie
+                       {
+                           Name = timeSerie.Name,
+                           Events = timeSerie.Events,
+                           Tags = timeSerie.Tags,
+                           Values = 
+                                values.Take(1)
+                               .Union(values.Skip(1).Take(values.Length - 2).Where(tv => tv.Value != 0.0))
+                               .Union(values.Skip(values.Length - 1)).
+                               ToArray()
+                       };
+        }
 
 		/// <summary>
 		/// List time-series in the specified dataset name.
@@ -305,12 +347,12 @@ namespace Lokad.Forecasting.Client
 		{
 			ValidateSerieNames(datasetName, serieNames);
 
-			for (var i = 0; i < serieNames.Length; i += Constants.SeriesSliceLength)
+			for (var i = 0; i < serieNames.Length; i += _seriesSliceLength)
 			{
 				// No 'Slice()' method available 
 				var errorCode =
 					_forecastingApi.DeleteTimeSeries(_identity, datasetName,
-						serieNames.Skip(i).Take(Constants.SeriesSliceLength).ToArray());
+						serieNames.Skip(i).Take(_seriesSliceLength).ToArray());
 
 				WrapAndThrow(errorCode);
 			}
@@ -350,6 +392,12 @@ namespace Lokad.Forecasting.Client
 		/// <seealso cref="IForecastingApi.GetForecasts"/>
 		public ForecastSerie[] GetForecasts(string datasetName, string[] serieNames)
 		{
+            // catching potential network timeouts
+		    return RetryPolicy(() => GetForecastsInternal(datasetName, serieNames));
+		}
+
+        ForecastSerie[] GetForecastsInternal(string datasetName, string[] serieNames)
+		{
 			ValidateSerieNames(datasetName, serieNames);
 
 			ForecastStatus status = null;
@@ -357,7 +405,7 @@ namespace Lokad.Forecasting.Client
 			{
 				if(null != status)
 				{
-					Thread.Sleep(30 * 1000); // 30s sleep between checks while waiting for the forecasts
+					Thread.Sleep(10 * 1000); // 10s sleep between checks while waiting for the forecasts
 				}
 
 				status = _forecastingApi.GetForecastStatus(_identity, datasetName);
@@ -372,12 +420,12 @@ namespace Lokad.Forecasting.Client
 			// they can't be retrieved in batches of 100 while still be compliant
 			// with 4MB limitation.
 
-			for (var i = 0; i < serieNames.Length; i += Constants.SeriesSliceLength)
+			for (var i = 0; i < serieNames.Length; i += _seriesSliceLength)
 			{
 				// No 'Slice()' method available 
 				var forecastCollection =
 					_forecastingApi.GetForecasts(_identity, datasetName,
-						serieNames.Skip(i).Take(Constants.SeriesSliceLength).ToArray());
+						serieNames.Skip(i).Take(_seriesSliceLength).ToArray());
 
 				WrapAndThrow(forecastCollection.ErrorCode);
 
@@ -444,5 +492,46 @@ namespace Lokad.Forecasting.Client
 					throw new InvalidOperationException(errorCode);
 			}
 		}
+
+        /// <summary>Ad-hoc retry policy for transcient network errors.</summary>
+        T RetryPolicy<T>(Func<T> webRequest)
+        {
+            const int maxAttempts = 10;
+
+            for (int i = 0; i < maxAttempts + 1; i++)
+            {
+                try
+                {
+                    // if the request completes, we don't try again
+                    return webRequest();
+                }
+                catch (TimeoutException)
+                {
+                    // after 'maxAttempts' we give up
+                    if (i >= maxAttempts)
+                    {
+                        throw;
+                    }
+
+                    // heuristic: time-outs are encountered with client with low bandwidth
+                    // in such situation, we need to make smaller web requests, otherwise 
+                    // no request is going to succeed.
+
+                    if (i >= 3) // at 3 timeouts, we switch to the 'slow mode'.
+                    {                    
+                        _seriesSliceLength = 10;
+                        _midSeriesSliceLength = 1;
+                    }
+
+                    if (i >= 6) // at 6 timeouts, we switch to the 'extra slow mode'.
+                    {
+                        _seriesSliceLength = 1;
+                        _midSeriesSliceLength = 1;
+                    }
+                }
+            }
+
+            throw new ApplicationException("Retry policy is broken.");
+        }
 	}
 }
