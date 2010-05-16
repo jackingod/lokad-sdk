@@ -37,6 +37,54 @@ namespace Lokad.Forecasting.Client.Tests
 			}
 		}
 
+        [Test]
+        public void PruneIntermediateZeroes_WorksWithEmptyValues()
+        {
+            var ts = new TimeSerie();
+            var pruned = ForecastingClient.PruneIntermediateZeroes(ts);
+            Assert.IsNotNull(pruned, "#A00");
+            Assert.IsNull(pruned.Values, "#A01");
+        }
+
+	    [Test]
+        public void PruneIntermediateZeroes_WorksWithSmallSeries()
+        {
+            var ts = new TimeSerie
+            {
+                Values = new[]
+                {
+                    new TimeValue {Time = DateTime.UtcNow, Value = 0.0},
+                    new TimeValue { Time = DateTime.UtcNow.AddHours(1), Value = 0.0}
+                }
+            };
+
+            var pruned = ForecastingClient.PruneIntermediateZeroes(ts);
+            Assert.IsNotNull(pruned, "#A00");
+            Assert.IsNotNull(pruned.Values, "#A01");
+            Assert.AreEqual(2, pruned.Values.Length, "#A02");
+        }
+
+        [Test]
+        public void PruneIntermediateZeroes_WorksWithMinySeries()
+        {
+            var ts = new TimeSerie
+            {
+                Values = new[]
+                {
+                    new TimeValue {Time = new DateTime(2001,1,1), Value = 0.0},
+                    new TimeValue {Time = new DateTime(2001,1,2), Value = 0.0},
+                    new TimeValue { Time = new DateTime(2001,1,3), Value = 0.0}
+                }
+            };
+
+            var pruned = ForecastingClient.PruneIntermediateZeroes(ts);
+            Assert.IsNotNull(pruned, "#A00");
+            Assert.IsNotNull(pruned.Values, "#A01");
+            Assert.AreEqual(2, pruned.Values.Length, "#A02");
+            Assert.AreEqual(ts.Values[0].Time, pruned.Values[0].Time, "#A03");
+            Assert.AreEqual(ts.Values[2].Time, pruned.Values[1].Time, "#A04");
+        }
+
 		[Test]
 		public void ListDatasets_IsForwarded()
 		{
