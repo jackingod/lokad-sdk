@@ -230,7 +230,7 @@ namespace Lokad.Forecasting.Client
             }
 
             // Heuristic: intermediate zeroes can be pruned
-            timeSeries = timeSeries.Select(PruneIntermediateZeroes).ToArray();
+            timeSeries = timeSeries.Select(serie => PruneIntermediateZeroes(serie)).ToArray();
 
             // When uploading series toward Lokad, requests should not weight more than 4MB
             // Instead of trying to figure out complex corner situation, we just deal with
