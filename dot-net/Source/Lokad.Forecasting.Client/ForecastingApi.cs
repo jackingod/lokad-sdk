@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.ServiceModel;
+using System.ServiceModel.Description;
 using System.Threading;
 
 namespace Lokad.Forecasting.Client
@@ -28,6 +29,17 @@ namespace Lokad.Forecasting.Client
 			var address = new EndpointAddress(endPoint);
 
 			_factory = new ChannelFactory<IForecastingApi>(binding, address);
+
+            // Updating MaxItemsInObjectGraph
+		    foreach(var op in _factory.Endpoint.Contract.Operations)
+		    {
+                var behavior = op.Behaviors.Find<DataContractSerializerOperationBehavior>();
+                if (behavior != null)
+                {
+                    behavior.MaxItemsInObjectGraph = int.MaxValue;
+                }
+		    }
+
 			_channel = _factory.CreateChannel(); 
 		}
 
