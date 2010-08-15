@@ -11,7 +11,7 @@ namespace Lokad.Forecasting.Client
 	/// <summary>Helpers for the Forecasting API.</summary>
 	public static class ForecastingApiValidators
 	{
-		const string DefaultNamePattern = "^[a-zA-Z0-9]{1,32}$";
+		public static readonly Regex DefaultNamePattern = new Regex("^[a-zA-Z0-9]{1,32}$", RegexOptions.Compiled);
 
 		readonly static string[] HighPeriods = new[] {PeriodCodes.QuarterHour, PeriodCodes.HalfHour, PeriodCodes.Hour};
 		readonly static string[] AllPeriods = new[] { PeriodCodes.QuarterHour, PeriodCodes.HalfHour, PeriodCodes.Hour,
@@ -19,7 +19,7 @@ namespace Lokad.Forecasting.Client
 
 		public static bool IsValidApiName(this string name)
 		{
-			return !string.IsNullOrEmpty(name) && Regex.Match(name, DefaultNamePattern).Success;
+			return !string.IsNullOrEmpty(name) && DefaultNamePattern.IsMatch(name);
 		}
 
 		public static void Validate(this Dataset dataset)
