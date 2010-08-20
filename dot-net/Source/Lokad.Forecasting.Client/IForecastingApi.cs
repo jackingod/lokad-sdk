@@ -421,6 +421,11 @@ namespace Lokad.Forecasting.Client
 		/// <summary>Value.</summary>
 		[DataMember]
 		public double Value { get; set; }
+
+		public override string ToString()
+		{
+			return string.Format("({0}, {1})", Time, Value);
+		}
 	}
 
 	/// <seealso cref="IForecastingApi.UpsertTimeSeries"/>
