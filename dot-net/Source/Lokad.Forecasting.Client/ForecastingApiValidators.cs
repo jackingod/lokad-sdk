@@ -127,6 +127,11 @@ namespace Lokad.Forecasting.Client
 			// 'Values' validation
 			if (timeSerie.Values != null)
 			{
+                if (timeSerie.Values.Length > 65536)
+                {
+                    throw new ArgumentException("Maximal number of time-values is 64k.");
+                }
+
 				// Time-values should be strictly ordered
 				for (int i = 0; i < timeSerie.Values.Length - 1; i++)
 				{
