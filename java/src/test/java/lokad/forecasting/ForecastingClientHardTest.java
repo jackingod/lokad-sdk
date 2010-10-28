@@ -1,20 +1,20 @@
-package org.lokad.forecasting;
+package lokad.forecasting;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
+import lokad.forecasting.Dataset;
+import lokad.forecasting.EventValue;
+import lokad.forecasting.ForecastSerie;
+import lokad.forecasting.ForecastingClient;
+import lokad.forecasting.TimeSerie;
+import lokad.forecasting.TimeValue;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.lokad.forecasting.api.Dataset;
-import org.lokad.forecasting.api.EventValue;
-import org.lokad.forecasting.api.ForecastSerie;
-import org.lokad.forecasting.api.TimeSerie;
-import org.lokad.forecasting.api.TimeValue;
-import org.lokad.forecasting.client.ForecastingClient;
-
 
 public class ForecastingClientHardTest {
 
@@ -34,14 +34,13 @@ public class ForecastingClientHardTest {
 	}
 	@Test
 	public void testClient1000() throws InterruptedException {
-//		testClient(5, 1000);
+		testClient(5, 1000);
 	}
 	@Test
 	public void testClient10000() throws InterruptedException {
-//		testClient(5, 100);
+		testClient(5, 10000);
 	}
 	@Test
-//	@Ignore
 	public void testClientRand10000() throws InterruptedException {
 		Random r = new Random();
 		testClient(r.nextInt(1000), r.nextInt(1000));
