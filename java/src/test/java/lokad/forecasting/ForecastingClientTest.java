@@ -1,24 +1,21 @@
-package org.lokad.forecasting;
-import static org.junit.Assert.*;
+package lokad.forecasting;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Calendar;
 import java.util.List;
+
+import lokad.forecasting.Dataset;
+import lokad.forecasting.EventValue;
+import lokad.forecasting.ForecastSerie;
+import lokad.forecasting.ForecastingClient;
+import lokad.forecasting.TimeSerie;
+import lokad.forecasting.TimeValue;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.lokad.forecasting.api.Dataset;
-import org.lokad.forecasting.api.DatasetCollection;
-import org.lokad.forecasting.api.EventValue;
-import org.lokad.forecasting.api.ForecastCollection;
-import org.lokad.forecasting.api.ForecastSerie;
-import org.lokad.forecasting.api.ForecastStatus;
-import org.lokad.forecasting.api.TimeSerie;
-import org.lokad.forecasting.api.TimeSerieCollection;
-import org.lokad.forecasting.api.TimeValue;
-import org.lokad.forecasting.client.ForecastingApi;
-import org.lokad.forecasting.client.ForecastingClient;
 
 
 public class ForecastingClientTest {
@@ -26,7 +23,7 @@ public class ForecastingClientTest {
 	private ForecastingClient client;
 	private final String endPoint = "http://sandbox-api.lokad.com/rest/forecasting3";
 	private final String identity = "wIL9oQEAtouvdRAcEGWF38uBxP/EupWdQzMnZCc=";
-	private final String DsName = "timsonSimpleDataset"; 
+	private final String DsName = "timsonSimpleDataset3"; 
 	
 	@Before
 	public void setUp() throws Exception {
@@ -102,7 +99,7 @@ public class ForecastingClientTest {
 	
 	@Test
 	public void testClient() throws InterruptedException {
-		String datasetName = DsName + "2"; 
+		String datasetName = DsName + "3"; 
 		Dataset dataset = new Dataset();
 		dataset.Name = datasetName;
 		dataset.Horizon = 1;
