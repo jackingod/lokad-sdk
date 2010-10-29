@@ -2,6 +2,7 @@ package lokad.forecasting;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
 
@@ -22,11 +23,12 @@ public class ForecastingClientTest {
 
 	private ForecastingClient client;
 	private final String endPoint = "http://sandbox-api.lokad.com/rest/forecasting3";
-	private final String identity = "wIL9oQEAtouvdRAcEGWF38uBxP/EupWdQzMnZCc=";
+	private String identity;
 	private final String DsName = "timsonSimpleDataset3"; 
 	
 	@Before
 	public void setUp() throws Exception {
+		identity = System.getProperty("apiKey");
 		client = new ForecastingClient(identity, endPoint);
 	}
 
@@ -35,7 +37,7 @@ public class ForecastingClientTest {
 	}
 
 	@Test
-	public void testInsertDataset() {
+	public void testInsertDataset() throws IOException {
 		Dataset dataset = new Dataset();
 		dataset.Name = DsName;
 		dataset.Horizon = 1;
@@ -45,13 +47,13 @@ public class ForecastingClientTest {
 	}
 
 	@Test
-	public void testListDatasets() {
+	public void testListDatasets() throws IOException {
 		List<Dataset> list = client.ListDatasets();
 		assertTrue(list.size() > 0);
 	}
 
 	@Test
-	public void testDeleteDataset() {
+	public void testDeleteDataset() throws IOException {
 		Dataset dataset = new Dataset();
 		dataset.Name = DsName;
 		dataset.Horizon = 1;
@@ -75,7 +77,7 @@ public class ForecastingClientTest {
 
 	@Test
 	@Ignore
-	public void testListTimeSeries() {
+	public void testListTimeSeries() throws IOException {
 		List<TimeSerie> list = client.ListTimeSeries(DsName);		
 	}
 
@@ -93,12 +95,12 @@ public class ForecastingClientTest {
 
 	@Test
 	@Ignore
-	public void testGetForecasts() throws InterruptedException {
+	public void testGetForecasts() throws InterruptedException, IOException {
 		client.GetForecasts(DsName, new String[] { });
 	}
 	
 	@Test
-	public void testClient() throws InterruptedException {
+	public void testClient() throws InterruptedException, IOException {
 		String datasetName = DsName + "3"; 
 		Dataset dataset = new Dataset();
 		dataset.Name = datasetName;

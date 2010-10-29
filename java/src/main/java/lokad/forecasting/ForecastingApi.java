@@ -1,4 +1,5 @@
 package lokad.forecasting;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -54,267 +55,214 @@ public class ForecastingApi implements IForecastingApi {
 	}
 
 	@Override
-	public String InsertDataset(String identity, Dataset dataset) {
+	public String InsertDataset(String identity, Dataset dataset) throws IOException {
 		String errorCode = "";
-		try {
-			URL url = new URL(endPoint + "/datasets");
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setDoInput(true);
-			connection.setDoOutput(true);
-			connection.setRequestMethod("PUT");
-			connection.setRequestProperty("Content-Type", "application/xml");
-			connection.setRequestProperty("Authorization", "Basic " + identity);
 
-			OutputStream outputStream = connection.getOutputStream();
-			//
-			XStream xstream = new XStream(new DomDriver());
-			xstream.alias("Dataset", Dataset.class);
-			xstream.toXML(dataset, outputStream);
-			//
-			int responseCode = connection.getResponseCode();
-			errorCode = getErrorCode(connection.getInputStream());
+		URL url = new URL(endPoint + "/datasets");
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setDoInput(true);
+		connection.setDoOutput(true);
+		connection.setRequestMethod("PUT");
+		connection.setRequestProperty("Content-Type", "application/xml");
+		connection.setRequestProperty("Authorization", "Basic " + identity);
 
-			connection.disconnect();
-		} catch (Exception e) {
-			e.printStackTrace();
-			// FIX
-			// throw e;
-		}
+		OutputStream outputStream = connection.getOutputStream();
+		//
+		XStream xstream = new XStream(new DomDriver());
+		xstream.alias("Dataset", Dataset.class);
+		xstream.toXML(dataset, outputStream);
+		//
+		int responseCode = connection.getResponseCode();
+		errorCode = getErrorCode(connection.getInputStream());
 
-		return errorCode; 
+		connection.disconnect();
+
+		return errorCode;
 	}
 
 	@Override
-	public DatasetCollection ListDatasets(String identity, String continuationToken) {
+	public DatasetCollection ListDatasets(String identity, String continuationToken) throws IOException {
 		DatasetCollection datasets = null;
-		try {
-			String u = endPoint + "/datasets" + 
-				((continuationToken != null && continuationToken.length() > 0) ? "/" + continuationToken : "");
-			URL url = new URL(u);
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setDoInput(true);
-			connection.setRequestMethod("GET");
-			connection.setRequestProperty("Authorization", "Basic " + identity);
+		String u = endPoint + "/datasets"
+				+ ((continuationToken != null && continuationToken.length() > 0) ? "/" + continuationToken : "");
+		URL url = new URL(u);
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setDoInput(true);
+		connection.setRequestMethod("GET");
+		connection.setRequestProperty("Authorization", "Basic " + identity);
 
-			//
-			XStream xstream = new XStream(new DomDriver()); // does not require XPP3 library
-			xstream.alias("DatasetCollection", DatasetCollection.class);
-			xstream.alias("Dataset", Dataset.class);
+		//
+		XStream xstream = new XStream(new DomDriver()); // does not require XPP3
+														// library
+		xstream.alias("DatasetCollection", DatasetCollection.class);
+		xstream.alias("Dataset", Dataset.class);
 
-			//
-			int responseCode = connection.getResponseCode();
-			InputStream inputStream = connection.getInputStream();
-			datasets = (DatasetCollection) xstream.fromXML(inputStream);
+		//
+		int responseCode = connection.getResponseCode();
+		InputStream inputStream = connection.getInputStream();
+		datasets = (DatasetCollection) xstream.fromXML(inputStream);
 
-			connection.disconnect();
-		} catch (Exception e) {
-			e.printStackTrace();
-			// FIXIT
-			// throw e;
-		}
+		connection.disconnect();
 
-		return datasets; 
+		return datasets;
 	}
 
 	@Override
-	public String DeleteDataset(String identity, String datasetName) {
+	public String DeleteDataset(String identity, String datasetName) throws IOException {
 		String errorCode = "";
-		try {
-			URL url = new URL(endPoint + "/datasets/" + datasetName);
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setDoInput(true);
-			connection.setRequestMethod("DELETE");
-			connection.setRequestProperty("Authorization", "Basic " + identity);
+		URL url = new URL(endPoint + "/datasets/" + datasetName);
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setDoInput(true);
+		connection.setRequestMethod("DELETE");
+		connection.setRequestProperty("Authorization", "Basic " + identity);
 
-			//
-			int responseCode = connection.getResponseCode();
-			errorCode = getErrorCode(connection.getInputStream());
+		//
+		int responseCode = connection.getResponseCode();
+		errorCode = getErrorCode(connection.getInputStream());
 
-			connection.disconnect();
-		} catch (Exception e) {
-			e.printStackTrace();
-//			throw e;
-		}
+		connection.disconnect();
 
-		return errorCode; 
+		return errorCode;
 	}
 
 	@Override
-	public String UpsertTimeSeries(String identity, String datasetName, TimeSerie[] timeSeries, Boolean enableMerge) {
+	public String UpsertTimeSeries(String identity, String datasetName, TimeSerie[] timeSeries, Boolean enableMerge) throws IOException {
 		String errorCode = "";
-		try {
-			String suffix = "/series/" + datasetName + "?merge=" + ((enableMerge) ? "true" : "false");
-			URL url = new URL(endPoint + suffix);
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setDoInput(true);
-			connection.setDoOutput(true);
-			connection.setRequestMethod("PUT");
-			connection.setRequestProperty("Content-Type", "application/xml");
-			connection.setRequestProperty("Authorization", "Basic " + identity);
+		String suffix = "/series/" + datasetName + "?merge=" + ((enableMerge) ? "true" : "false");
+		URL url = new URL(endPoint + suffix);
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setDoInput(true);
+		connection.setDoOutput(true);
+		connection.setRequestMethod("PUT");
+		connection.setRequestProperty("Content-Type", "application/xml");
+		connection.setRequestProperty("Authorization", "Basic " + identity);
 
-			OutputStream outputStream = connection.getOutputStream();
-			//
-			XStream xstream = new XStream(new DomDriver()); // does not require XPP3 library
-			xstream.alias("TimeSeries", TimeSerie[].class);
-			xstream.alias("TimeSerie", TimeSerie.class);
-			xstream.alias("TimeValue", TimeValue.class);
-			xstream.alias("EventValue", EventValue.class);
-			xstream.registerConverter(new DateConverter());
-			xstream.toXML(timeSeries, outputStream);
-			
-//			String xml;
-//			String xml = xstream.toXML(timeSeries);
-//			xml = "<TimeSeries><TimeSerie><Name>lollipop</Name><Values><TimeValue>" +
-//			"<Time>2010-05-01</Time><Value>42</Value></Values></TimeSerie></TimeSeries>";
-//			xml = "<TimeSeries></TimeSeries>";
-//			xml = "<timeSeries><TimeSerie><Events/><Name>1234</Name><Tags/><Values><TimeValue><Time>2010-10-22T15:14:32.0587927</Time><Value>1</Value></TimeValue></Values></TimeSerie></timeSeries>";
-//			OutputStreamWriter os = new OutputStreamWriter (outputStream);
-//			os.write(xml);
-//			os.close();
-			
-//			System.out.println(xml);
-			//
-			int responseCode = connection.getResponseCode();
-			errorCode = getErrorCode(connection.getInputStream());
+		OutputStream outputStream = connection.getOutputStream();
+		//
+		XStream xstream = new XStream(new DomDriver()); // does not require XPP3
+														// library
+		xstream.alias("TimeSeries", TimeSerie[].class);
+		xstream.alias("TimeSerie", TimeSerie.class);
+		xstream.alias("TimeValue", TimeValue.class);
+		xstream.alias("EventValue", EventValue.class);
+		xstream.registerConverter(new DateConverter());
+		xstream.toXML(timeSeries, outputStream);
 
-			connection.disconnect();
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
+		//
+		int responseCode = connection.getResponseCode();
+		errorCode = getErrorCode(connection.getInputStream());
 
-		return errorCode; 
+		connection.disconnect();
+
+		return errorCode;
 	}
 
 	@Override
-	public TimeSerieCollection ListTimeSeries(String identity, String datasetName, String continuationToken) {
+	public TimeSerieCollection ListTimeSeries(String identity, String datasetName, String continuationToken) throws IOException {
 		TimeSerieCollection timeSerieCollection = null;
-		try {
-			String u = endPoint + "/series/" + datasetName + 
-				((continuationToken != null && continuationToken.length() > 0) ? "/" + continuationToken : "");
-			URL url = new URL(u);
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setDoInput(true);
-			connection.setRequestMethod("GET");
-			connection.setRequestProperty("Authorization", "Basic " + identity);
+		String u = endPoint + "/series/" + datasetName
+				+ ((continuationToken != null && continuationToken.length() > 0) ? "/" + continuationToken : "");
+		URL url = new URL(u);
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setDoInput(true);
+		connection.setRequestMethod("GET");
+		connection.setRequestProperty("Authorization", "Basic " + identity);
 
-			//
-			XStream xstream = new XStream(new DomDriver()); // does not require XPP3 library
-			xstream.alias("TimeSerieCollection", TimeSerieCollection.class);
-			xstream.alias("TimeSerie", TimeSerie.class);
-			xstream.alias("TimeValue", TimeValue.class);
-			xstream.alias("EventValue", EventValue.class);
-			xstream.registerConverter(new DateConverter());
+		//
+		XStream xstream = new XStream(new DomDriver()); // does not require XPP3
+														// library
+		xstream.alias("TimeSerieCollection", TimeSerieCollection.class);
+		xstream.alias("TimeSerie", TimeSerie.class);
+		xstream.alias("TimeValue", TimeValue.class);
+		xstream.alias("EventValue", EventValue.class);
+		xstream.registerConverter(new DateConverter());
 
-			//
-			int responseCode = connection.getResponseCode();
-			InputStream inputStream = connection.getInputStream();
-			timeSerieCollection = (TimeSerieCollection) xstream.fromXML(inputStream);
+		//
+		int responseCode = connection.getResponseCode();
+		InputStream inputStream = connection.getInputStream();
+		timeSerieCollection = (TimeSerieCollection) xstream.fromXML(inputStream);
 
-			connection.disconnect();
-		} catch (Exception e) {
-			e.printStackTrace();
-//			throw e;
-		}
+		connection.disconnect();
 
-		return timeSerieCollection; 
+		return timeSerieCollection;
 	}
 
 	@Override
-	public String DeleteTimeSeries(String identity, String datasetName, String[] serieNames) {
+	public String DeleteTimeSeries(String identity, String datasetName, String[] serieNames) throws IOException {
 		String errorCode = "";
-		try {
-			String series = join(serieNames, ";");
-			StringBuilder sb = new StringBuilder(endPoint)
-				.append("/series/")
-				.append(datasetName)
-				.append("?n=")
+
+		String series = join(serieNames, ";");
+		StringBuilder sb = new StringBuilder(endPoint).append("/series/").append(datasetName).append("?n=")
 				.append(series);
-			
-			URL url = new URL(sb.toString());
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setDoInput(true);
-			connection.setRequestMethod("DELETE");
-			connection.setRequestProperty("Authorization", "Basic " + identity);
 
-			//
-			int responseCode = connection.getResponseCode();
-			errorCode = getErrorCode(connection.getInputStream());
+		URL url = new URL(sb.toString());
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setDoInput(true);
+		connection.setRequestMethod("DELETE");
+		connection.setRequestProperty("Authorization", "Basic " + identity);
 
-			connection.disconnect();
-		} catch (Exception e) {
-			e.printStackTrace();
-//			throw e;
-		}
+		//
+		int responseCode = connection.getResponseCode();
+		errorCode = getErrorCode(connection.getInputStream());
 
-		return errorCode; 
+		connection.disconnect();
+
+		return errorCode;
 	}
 
 	@Override
-	public ForecastStatus GetForecastStatus(String identity, String datasetName) {
+	public ForecastStatus GetForecastStatus(String identity, String datasetName) throws IOException {
 		ForecastStatus status = null;
-		try {
-			String u = endPoint + "/status/" + datasetName;
-			URL url = new URL(u);
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setDoInput(true);
-			connection.setRequestMethod("GET");
-			connection.setRequestProperty("Authorization", "Basic " + identity);
+		String u = endPoint + "/status/" + datasetName;
+		URL url = new URL(u);
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setDoInput(true);
+		connection.setRequestMethod("GET");
+		connection.setRequestProperty("Authorization", "Basic " + identity);
 
-			//
-			XStream xstream = new XStream(new DomDriver()); // does not require XPP3 library
-			xstream.alias("ForecastStatus", ForecastStatus.class);
-			//
-			int responseCode = connection.getResponseCode();
-			InputStream inputStream = connection.getInputStream();
-			status = (ForecastStatus) xstream.fromXML(inputStream);
+		//
+		XStream xstream = new XStream(new DomDriver()); // does not require XPP3
+														// library
+		xstream.alias("ForecastStatus", ForecastStatus.class);
+		//
+		int responseCode = connection.getResponseCode();
+		InputStream inputStream = connection.getInputStream();
+		status = (ForecastStatus) xstream.fromXML(inputStream);
 
-			connection.disconnect();
-		} catch (Exception e) {
-			e.printStackTrace();
-//			throw e;
-		}
+		connection.disconnect();
 
 		return status;
 	}
 
 	@Override
-	public ForecastCollection GetForecasts(String identity, String datasetName, String[] serieNames) {
+	public ForecastCollection GetForecasts(String identity, String datasetName, String[] serieNames) throws IOException {
 		ForecastCollection forecasts = null;
-		try {
-			String series = join(serieNames, ";");
-			StringBuilder sb = new StringBuilder(endPoint)
-				.append("/forecasts/")
-				.append(datasetName)
-				.append("?n=")
+		String series = join(serieNames, ";");
+		StringBuilder sb = new StringBuilder(endPoint).append("/forecasts/").append(datasetName).append("?n=")
 				.append(series);
-			URL url = new URL(sb.toString());
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setDoInput(true);
-			connection.setRequestMethod("GET");
-			connection.setRequestProperty("Authorization", "Basic " + identity);
+		URL url = new URL(sb.toString());
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setDoInput(true);
+		connection.setRequestMethod("GET");
+		connection.setRequestProperty("Authorization", "Basic " + identity);
 
-			//
-			XStream xstream = new XStream(new DomDriver()); // does not require XPP3 library
-			xstream.alias("ForecastCollection", ForecastCollection.class);
-			xstream.alias("ForecastSerie", ForecastSerie.class);
-			xstream.alias("ForecastValue", ForecastValue.class);
-			xstream.alias("TimeSerieCollection", TimeSerieCollection.class);
-			xstream.alias("TimeSerie", TimeSerie.class);
-			xstream.alias("TimeValue", TimeValue.class);
-			xstream.registerConverter(new DateConverter());
-			//
-			int responseCode = connection.getResponseCode();
-			InputStream inputStream = connection.getInputStream();
-			forecasts = (ForecastCollection) xstream.fromXML(inputStream);
+		//
+		XStream xstream = new XStream(new DomDriver()); // does not require XPP3
+														// library
+		xstream.alias("ForecastCollection", ForecastCollection.class);
+		xstream.alias("ForecastSerie", ForecastSerie.class);
+		xstream.alias("ForecastValue", ForecastValue.class);
+		xstream.alias("TimeSerieCollection", TimeSerieCollection.class);
+		xstream.alias("TimeSerie", TimeSerie.class);
+		xstream.alias("TimeValue", TimeValue.class);
+		xstream.registerConverter(new DateConverter());
+		//
+		int responseCode = connection.getResponseCode();
+		InputStream inputStream = connection.getInputStream();
+		forecasts = (ForecastCollection) xstream.fromXML(inputStream);
 
-			connection.disconnect();
-		} catch (Exception e) {
-			e.printStackTrace();
-//			throw e;
-		}
+		connection.disconnect();
 
 		return forecasts;
 	}
-
 }

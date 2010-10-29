@@ -3,6 +3,7 @@ package lokad.forecasting;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.Calendar;
 
 import lokad.forecasting.Base64;
@@ -24,13 +25,14 @@ import org.junit.Test;
 public class ForecastApiTest {
 
 	private final String endPoint = "http://sandbox-api.lokad.com/rest/forecasting3";
-	private final String identity = Base64.encode("auth-with-key@lokad.com" + ":"
-			+ "wIL9oQEAtouvdRAcEGWF38uBxP/EupWdQzMnZCc=");
+	private String identity;
 
 	private final String DsName = "timsonSimpleDataset";
 
 	@Before
 	public void setUp() throws Exception {
+		String apiKey = System.getProperty("apiKey");
+		identity = Base64.encode("auth-with-key@lokad.com" + ":" + apiKey);
 	}
 
 	@After
@@ -40,7 +42,7 @@ public class ForecastApiTest {
 	}
 
 	@Test
-	public void testInsertDataset() {
+	public void testInsertDataset() throws IOException {
 		Dataset dataset = new Dataset();
 		dataset.Name = DsName;
 		dataset.Horizon = 1;
@@ -53,7 +55,7 @@ public class ForecastApiTest {
 	}
 
 	@Test
-	public void testListDatasets() {
+	public void testListDatasets() throws IOException {
 		ForecastingApi f = new ForecastingApi(endPoint);
 		DatasetCollection collection = f.ListDatasets(identity, null);
 
@@ -62,7 +64,7 @@ public class ForecastApiTest {
 	}
 
 	@Test
-	public void testDeleteDataset() {
+	public void testDeleteDataset() throws IOException {
 		ForecastingApi f = new ForecastingApi(endPoint);
 		String errorCode = f.DeleteDataset(identity, DsName);
 		assertTrue(errorCode, errorCode == null || errorCode.length() == 0);
@@ -75,7 +77,7 @@ public class ForecastApiTest {
 	}
 
 	@Test
-	public void testListTimeSeries() {
+	public void testListTimeSeries() throws IOException {
 		ForecastingApi f = new ForecastingApi(endPoint);
 		TimeSerieCollection collection = f.ListTimeSeries(identity, "SCx311x6Month201010132311", "");
 
@@ -89,14 +91,14 @@ public class ForecastApiTest {
 	}
 
 	@Test
-	public void testGetForecastStatus() {
+	public void testGetForecastStatus() throws IOException {
 		ForecastingApi f = new ForecastingApi(endPoint);
 		ForecastStatus status = f.GetForecastStatus(identity, "SCx311x6Month201010132311");
 		assertTrue(status.ErrorCode, status.ErrorCode == null || status.ErrorCode.length() == 0);
 	}
 
 	@Test
-	public void testGetForecasts() {
+	public void testGetForecasts() throws IOException {
 		ForecastingApi f = new ForecastingApi(endPoint);
 		ForecastCollection collection = f.GetForecasts(identity, "SCx311x6Month201010132311", new String[] { "90582",
 				"113778" });
@@ -104,7 +106,7 @@ public class ForecastApiTest {
 	}
 
 	@Test
-	public void testApi() {
+	public void testApi() throws IOException {
 		ForecastingApi f = new ForecastingApi(endPoint);
 
 		String datasetName = DsName + "2";
@@ -161,9 +163,10 @@ public class ForecastApiTest {
 		ForecastCollection forecasts = f.GetForecasts(identity, datasetName, serieNames);
 		assertTrue("GetForecasts returned: " + errorCode, errorCode == null || errorCode.length() == 0);
 
-		//TODO InvalidDatasetState
-//		errorCode = f.DeleteTimeSeries(identity, datasetName, serieNames);
-//		assertTrue("DeleteTimeSeries returned: " + errorCode, errorCode == null || errorCode.length() == 0);
+		// TODO InvalidDatasetState
+		// errorCode = f.DeleteTimeSeries(identity, datasetName, serieNames);
+		// assertTrue("DeleteTimeSeries returned: " + errorCode, errorCode ==
+		// null || errorCode.length() == 0);
 
 		errorCode = f.DeleteDataset(identity, datasetName);
 		assertTrue("DeleteDataset returned: " + errorCode, errorCode == null || errorCode.length() == 0);
