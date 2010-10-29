@@ -1,5 +1,6 @@
 package lokad.forecasting;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,6 +107,7 @@ public class ForecastingClient {
 	 * 
 	 * @param dataset
 	 *            Dataset to be inserted.
+	 * @throws IOException if an error occurred working with server.
 	 * @throws IllegalArgumentException
 	 *             Thrown if the dataset is not compliant with the Forecasting
 	 *             API restrictions.
@@ -116,7 +118,7 @@ public class ForecastingClient {
 	 *             service happens to be down at the time.
 	 * @see IForecastingApi#InsertDataset(String, Dataset)
 	 */
-	public void InsertDataset(Dataset dataset) {
+	public void InsertDataset(Dataset dataset) throws IOException {
 		ForecastingApiValidators.Validate(dataset);
 		String errorCode = _forecastingApi.InsertDataset(_identity, dataset);
 		WrapAndThrow(errorCode);
@@ -127,11 +129,12 @@ public class ForecastingClient {
 	 * 
 	 * @return Lazy enumeration, network requests happen as the set gets
 	 *         enumerated.
+	 * @throws IOException if an error occurred working with server.
 	 * @throws Thrown
 	 *             if the access rights are incorrect, or if the service is down
 	 *             at the moment.
 	 */
-	public List<Dataset> ListDatasets() {
+	public List<Dataset> ListDatasets() throws IOException {
 		DatasetCollection datasets = null;
 		List<Dataset> collection = new ArrayList<Dataset>();
 
@@ -154,6 +157,7 @@ public class ForecastingClient {
 	 * 
 	 * @param datasetName
 	 *            Name of the target dataset.
+	 * @throws IOException if an error occurred working with server.
 	 * @throws NullPointerException
 	 *             Thrown if the argument <code>datasetNames</code> is null.
 	 * @throws IllegalArgumentException
@@ -163,7 +167,7 @@ public class ForecastingClient {
 	 *             Thrown if the access rights are incorrect, or if the service
 	 *             is not available at the time.
 	 */
-	public void DeleteDataset(String datasetName) {
+	public void DeleteDataset(String datasetName) throws IOException {
 		if (!ForecastingApiValidators.IsValidApiName(datasetName)) {
 			throw new IllegalArgumentException(String.format("%s is not a valid dataset name.", datasetName));
 		}
@@ -183,6 +187,7 @@ public class ForecastingClient {
 	 * @param datasetName
 	 *            Name of the target dataset.
 	 * @throws InterruptedException
+	 * @throws IOException if an error occurred working with server.
 	 * @throws NullPointerException
 	 *             Thrown if the argument <code>datasetNames</code> is null.
 	 * @throws IllegalArgumentException
@@ -192,7 +197,7 @@ public class ForecastingClient {
 	 *             Thrown if the access rights are incorrect, or if the service
 	 *             is not available at the time.
 	 */
-	public void DeleteDatasetAndWait(String datasetName) throws InterruptedException {
+	public void DeleteDatasetAndWait(String datasetName) throws InterruptedException, IOException {
 		DeleteDataset(datasetName);
 
 		TimeSerieCollection collection;
@@ -221,6 +226,7 @@ public class ForecastingClient {
 	 * @param enableMerge
 	 *            Indicate whether existing series will be merged with inputs,
 	 *            or if existing series will be overwritten by inputs.
+	 * @throws IOException if an error occurred working with server.
 	 * @throws NullPointerException
 	 *             Thrown if one of the argument is null.
 	 * @throws IllegalArgumentException
@@ -232,13 +238,13 @@ public class ForecastingClient {
 	 * @see IForecastingApi#UpsertTimeSeries(String, String, TimeSerie[],
 	 *      Boolean)
 	 */
-	public void UpsertTimeSeries(String datasetName, TimeSerie[] timeSeries, boolean enableMerge) {
+	public void UpsertTimeSeries(String datasetName, TimeSerie[] timeSeries, boolean enableMerge) throws IOException {
 		// TODO catching potential network timeouts
 
 		UpsertTimeSeriesInternal(datasetName, timeSeries, enableMerge);
 	}
 
-	void UpsertTimeSeriesInternal(String datasetName, TimeSerie[] timeSeries, boolean enableMerge) {
+	void UpsertTimeSeriesInternal(String datasetName, TimeSerie[] timeSeries, boolean enableMerge) throws IOException {
 		List<String> serieNames = new ArrayList<String>();
 		for (TimeSerie timeSerie : timeSeries) {
 			serieNames.add(timeSerie.Name);
@@ -337,6 +343,7 @@ public class ForecastingClient {
 	 *            Enumerated dataset.
 	 * @return A lazy enumeration of the time-series contained in the dataset is
 	 *         returned. Network calls are made as the series get enumerated.
+	 * @throws IOException if an error occurred working with server.
 	 * @throws NullPointerException
 	 *             Thrown if the argument is null.
 	 * @throws IllegalArgumentException
@@ -347,7 +354,7 @@ public class ForecastingClient {
 	 *             does not exists, or if the service is down.
 	 * @see IForecastingApi#ListTimeSeries(String, String, String)
 	 */
-	public List<TimeSerie> ListTimeSeries(String datasetName) {
+	public List<TimeSerie> ListTimeSeries(String datasetName) throws IOException {
 		TimeSerieCollection timeSeries = null;
 		List<TimeSerie> collection = new ArrayList<TimeSerie>();
 
@@ -373,6 +380,7 @@ public class ForecastingClient {
 	 *            Targeted dataset.
 	 * @param serieNames
 	 *            Series to be deleted.
+	 * @throws IOException if an error occurred working with server.
 	 * @throws NullPointerException
 	 *             Thrown if one of the argument is null.
 	 * @throws IllegalArgumentException
@@ -383,7 +391,7 @@ public class ForecastingClient {
 	 *             does not exist, or if the service is down.
 	 * @see IForecastingApi#DeleteTimeSeries(String, String, String[])
 	 */
-	public void DeleteTimeSeries(String datasetName, String[] serieNames) {
+	public void DeleteTimeSeries(String datasetName, String[] serieNames) throws IOException {
 		ValidateSerieNames(datasetName, serieNames);
 
 		for (int i = 0; i < serieNames.length; i += _seriesSliceLength) {
@@ -413,8 +421,9 @@ public class ForecastingClient {
 	 * @param datasetName
 	 *            Targeted dataset.
 	 * @return Indicates whether the forecasts are ready.
+	 * @throws IOException if an error occurred working with server.
 	 */
-	public boolean TriggerForecastCompute(String datasetName) {
+	public boolean TriggerForecastCompute(String datasetName) throws IOException {
 		ForecastStatus status = _forecastingApi.GetForecastStatus(_identity, datasetName);
 
 		WrapAndThrow(status.ErrorCode);
@@ -435,6 +444,7 @@ public class ForecastingClient {
 	 *            dataset are ignored.
 	 * @return
 	 * @throws InterruptedException
+	 * @throws IOException if an error occurred working with server.
 	 * @throws NullPointerException
 	 *             Thrown if any of the argument is null.
 	 * @throws IllegalArgumentException
@@ -446,7 +456,7 @@ public class ForecastingClient {
 	 * @see IForecastingApi#GetForecastStatus(String, String)
 	 * @see IForecastingApi#GetForecasts(String, String, String[])
 	 */
-	public ForecastSerie[] GetForecasts(String datasetName, String[] serieNames) throws InterruptedException {
+	public ForecastSerie[] GetForecasts(String datasetName, String[] serieNames) throws InterruptedException, IOException {
 		// TODO
 		// catching potential network timeouts
 		// return RetryPolicy(() => GetForecastsInternal(datasetName,
@@ -454,7 +464,7 @@ public class ForecastingClient {
 		return GetForecastsInternal(datasetName, serieNames);
 	}
 
-	private ForecastSerie[] GetForecastsInternal(String datasetName, String[] serieNames) throws InterruptedException {
+	private ForecastSerie[] GetForecastsInternal(String datasetName, String[] serieNames) throws InterruptedException, IOException {
 		ValidateSerieNames(datasetName, serieNames);
 
 		ForecastStatus status = null;

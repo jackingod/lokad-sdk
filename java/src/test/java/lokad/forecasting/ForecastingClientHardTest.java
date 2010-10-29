@@ -1,6 +1,7 @@
 package lokad.forecasting;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
@@ -20,33 +21,34 @@ public class ForecastingClientHardTest {
 
 	private ForecastingClient client;
 	private final String endPoint = "http://sandbox-api.lokad.com/rest/forecasting3";
-	private final String identity = "wIL9oQEAtouvdRAcEGWF38uBxP/EupWdQzMnZCc=";
+	private String identity;
 	private final String DsName = "timsonSimpleDataset"; 
 	
 	@Before
 	public void setUp() throws Exception {
+		identity = System.getProperty("apiKey");
 		client = new ForecastingClient(identity, endPoint);
 	}
 
 	@Test
-	public void testClient100() throws InterruptedException {
+	public void testClient100() throws InterruptedException, IOException {
 		testClient(2, 100);
 	}
 	@Test
-	public void testClient1000() throws InterruptedException {
+	public void testClient1000() throws InterruptedException, IOException {
 		testClient(5, 1000);
 	}
 	@Test
-	public void testClient10000() throws InterruptedException {
+	public void testClient10000() throws InterruptedException, IOException {
 		testClient(5, 10000);
 	}
 	@Test
-	public void testClientRand10000() throws InterruptedException {
+	public void testClientRand10000() throws InterruptedException, IOException {
 		Random r = new Random();
 		testClient(r.nextInt(1000), r.nextInt(1000));
 	}	
 	
-	private void testClient(int timeSeriesCount, int timeSerieSize) throws InterruptedException {
+	private void testClient(int timeSeriesCount, int timeSerieSize) throws InterruptedException, IOException {
 		String datasetName = String.format("%s%dc%d", DsName, timeSeriesCount, timeSerieSize); 
 		Dataset dataset = new Dataset();
 		dataset.Name = datasetName;

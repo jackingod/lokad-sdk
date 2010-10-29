@@ -1,5 +1,7 @@
 package lokad.forecasting;
 
+import java.io.IOException;
+
 /**
  * Forecasting API v3.
  */
@@ -54,8 +56,9 @@ public interface IForecastingApi {
 	 *         <li>OutOfRangeInput</li>
 	 *         <li>ServiceFailure</li>
 	 *         </ul>
+	 * @throws IOException 
 	 */
-	String InsertDataset(String identity, Dataset dataset);
+	String InsertDataset(String identity, Dataset dataset) throws IOException;
 
 	/**
 	 * Incremental enumeration of the datasets contained in a Lokad account.
@@ -81,8 +84,9 @@ public interface IForecastingApi {
 	 *         <li>ServiceFailure</li>
 	 *         </ul>
 	 *         </p>
+	 * @throws IOException 
 	 */
-	DatasetCollection ListDatasets(String identity, String continuationToken);
+	DatasetCollection ListDatasets(String identity, String continuationToken) throws IOException;
 
 	/**
 	 * Asynchronous deletion of a dataset contained in a Lokad account.
@@ -103,8 +107,9 @@ public interface IForecastingApi {
 	 *         <li>OutOfRangeInput</li>
 	 *         <li>ServiceFailure</li>
 	 *         </ul>
+	 * @throws IOException 
 	 */
-	String DeleteDataset(String identity, String datasetName);
+	String DeleteDataset(String identity, String datasetName) throws IOException;
 
 	/**
 	 * Update or insert decorated time-series in a dataset attached to a Lokad
@@ -144,8 +149,9 @@ public interface IForecastingApi {
 	 *         <li>InvalidDatasetState</li>
 	 *         <li>ServiceFailure</li>
 	 *         </ul>
+	 * @throws IOException 
 	 */
-	String UpsertTimeSeries(String identity, String datasetName, TimeSerie[] timeSeries, Boolean enableMerge);
+	String UpsertTimeSeries(String identity, String datasetName, TimeSerie[] timeSeries, Boolean enableMerge) throws IOException;
 
 	/**
 	 * Incremental enumeration of the time-series contained in a Lokad account.
@@ -174,8 +180,9 @@ public interface IForecastingApi {
 	 *         <li>ServiceFailure</li>
 	 *         </ul>
 	 *         </p>
+	 * @throws IOException 
 	 */
-	TimeSerieCollection ListTimeSeries(String identity, String datasetName, String continuationToken);
+	TimeSerieCollection ListTimeSeries(String identity, String datasetName, String continuationToken) throws IOException;
 
 	/**
 	 * Delete time-series from the specified datasets in a Lokad account.
@@ -197,8 +204,9 @@ public interface IForecastingApi {
 	 *         <li>InvalidDatasetState</li>
 	 *         <li>ServiceFailure</li>
 	 *         </ul>
+	 * @throws IOException 
 	 */
-	String DeleteTimeSeries(String identity, String datasetName, String[] serieNames);
+	String DeleteTimeSeries(String identity, String datasetName, String[] serieNames) throws IOException;
 
 	/**
 	 * Call this method once, just after finishing uploading you updated series.
@@ -221,8 +229,9 @@ public interface IForecastingApi {
 	 *         <li>InvalidDatasetState</li>
 	 *         <li>ServiceFailure</li>
 	 *         </ul>
+	 * @throws IOException 
 	 */
-	ForecastStatus GetForecastStatus(String identity, String datasetName);
+	ForecastStatus GetForecastStatus(String identity, String datasetName) throws IOException;
 
 	/**
 	 * Retrieves the forecasts from a dataset of a Lokad account.
@@ -250,6 +259,7 @@ public interface IForecastingApi {
 	 *         <li>InvalidDatasetState</li>
 	 *         <li>ServiceFailure</li>
 	 *         </ul>
+	 * @throws IOException 
 	 */
-	ForecastCollection GetForecasts(String identity, String datasetName, String[] serieNames);
+	ForecastCollection GetForecasts(String identity, String datasetName, String[] serieNames) throws IOException;
 }
