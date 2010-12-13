@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.ServiceModel;
+using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.Threading;
 
@@ -24,11 +25,22 @@ namespace Lokad.Forecasting.Client
 
 		public ForecastingApi(string endPoint)
 		{
-			var binding = new BasicHttpBinding();
-            binding.MaxReceivedMessageSize = MaxMessageSize;
-			var address = new EndpointAddress(endPoint);
+            // Uncomment below to enable HTTP request compression (don't forget endpoint behavior too)
+            var binding = new BasicHttpBinding();
+
+            //var basicBinding = new BasicHttpBinding();
+            //basicBinding.MaxReceivedMessageSize = MaxMessageSize;
+
+            //var encoding = (MessageEncodingBindingElement)basicBinding.CreateBindingElements().First(x => x is MessageEncodingBindingElement);
+            //var transport = basicBinding.CreateBindingElements().First(x => x is HttpTransportBindingElement); ;
+
+            //// overriding 'BasicHttpBinding' with a 'CustomBinding'
+            //var binding = new CustomBinding(new GZipMessageEncodingBindingElement(encoding), transport);
+
+            var address = new EndpointAddress(endPoint);
 
 			_factory = new ChannelFactory<IForecastingApi>(binding, address);
+            //_factory.Endpoint.Behaviors.Add(new GZipHeaderRequestBehavior()); // add ''gzip' header
 
             // Updating MaxItemsInObjectGraph
 		    foreach(var op in _factory.Endpoint.Contract.Operations)
@@ -39,7 +51,7 @@ namespace Lokad.Forecasting.Client
                     behavior.MaxItemsInObjectGraph = int.MaxValue;
                 }
 		    }
-
+		    
 			_channel = _factory.CreateChannel(); 
 		}
 
