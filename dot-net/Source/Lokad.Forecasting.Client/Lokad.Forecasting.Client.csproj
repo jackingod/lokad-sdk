@@ -90,7 +90,6 @@
     <Compile Include="ForecastingClient.cs" />
     <Compile Include="ForecastingClientExtensions.cs" />
     <Compile Include="IForecastingApi.cs" />
-    <Compile Include="GZipMessageEncoding.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
