@@ -26,6 +26,8 @@ namespace Lokad.Forecasting.Client
 		public ForecastingApi(string endPoint)
 		{
             var binding = new BasicHttpBinding();
+            binding.MaxReceivedMessageSize = MaxMessageSize;
+
             var address = new EndpointAddress(endPoint);
 			_factory = new ChannelFactory<IForecastingApi>(binding, address);
 
