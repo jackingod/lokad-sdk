@@ -239,7 +239,7 @@ namespace Lokad.Forecasting.Client
             // Splitting series according to their respective sizes
             var veryLargeSeries = timeSeries.Where(t => t.Values != null && t.Values.Length > 10000).ToArray();
             var largeSeries = timeSeries.Where(t => t.Values != null && t.Values.Length <= 10000 && t.Values.Length > 1000).ToArray();
-            var smallSeries = timeSeries.Where(t => t.Values == null || t.Values.Length < 1000).ToArray();
+            var smallSeries = timeSeries.Where(t => t.Values == null || t.Values.Length <= 1000).ToArray();
 
             // very large series are uploaded 1 by 1
             for (var i = 0; i < veryLargeSeries.Length; i++)
