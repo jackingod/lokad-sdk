@@ -13,7 +13,10 @@ using System.Xml.Serialization;
 
 namespace Lokad.Forecasting.Client
 {
-    public class LokadRequest
+    /// <summary>
+    /// 
+    /// </summary>
+    internal class LokadRequest
     {
         private string _identity;
 
@@ -46,7 +49,7 @@ namespace Lokad.Forecasting.Client
                 request.ContentLength = 0;
             }
 
-            var response = RetryPolicy(request.GetResponse);
+            var response = RetryPolicy(() => request.GetResponse());
 
             var output = response.GetResponseStream();
 
@@ -65,7 +68,7 @@ namespace Lokad.Forecasting.Client
         }
 
         /// <summary>Ad-hoc retry policy for transient network errors.</summary>
-        static T RetryPolicy<T>(Func<T> webRequest)
+        private static T RetryPolicy<T>(Func<T> webRequest)
         {
             const int maxAttempts = 10;
 

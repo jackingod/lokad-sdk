@@ -369,15 +369,12 @@ namespace Lokad.Forecasting.Client
     public class TimeSerieCollection
     {
         /// <remarks></remarks>
-
         public TimeSerie[] TimeSeries { get; set; }
 
         /// <remarks></remarks>
-
         public string ContinuationToken { get; set; }
 
         /// <see cref="ErrorCodes"/>
-
         public string ErrorCode { get; set; }
     }
 
@@ -385,11 +382,9 @@ namespace Lokad.Forecasting.Client
     public class TimeValue
     {
         /// <summary>Time.</summary>
-
         public DateTime Time { get; set; }
 
         /// <summary>Value.</summary>
-
         public double Value { get; set; }
 
         public override string ToString()
@@ -445,7 +440,6 @@ namespace Lokad.Forecasting.Client
     public class ForecastValue
     {
         /// <summary>Time.</summary>
-
         public DateTime Time { get; set; }
 
         /// <summary>Value.</summary>
