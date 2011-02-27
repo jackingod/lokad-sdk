@@ -9,6 +9,9 @@ using System.Xml.Linq;
 
 namespace Lokad.Forecasting.Client
 {
+    /// <summary>
+    /// <summary>Decorator around the Forecasting API v3. REST endpoint</summary>
+    /// </summary>
     public class ForecastingApi : IForecastingApi
     {
         private readonly string _endpoint;

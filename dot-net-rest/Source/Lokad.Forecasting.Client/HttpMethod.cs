@@ -10,8 +10,17 @@ namespace Lokad.Forecasting.Client
     /// </summary>
     public class HttpMethod
     {
+        /// <summary>
+        /// Put http method
+        /// </summary>
         public const string Put = "PUT";
+        /// <summary>
+        /// Get http method
+        /// </summary>
         public const string Get = "GET";
+        /// <summary>
+        /// Delete http method
+        /// </summary>
         public const string Delete = "DELETE";
     }
 }
