@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <Version Condition="$(Version)==''">0.0.0.0</Version>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
@@ -42,20 +43,35 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\VersionAssemblyInfo.cs">
+      <Link>Properties\VersionAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="ForcastingClient.cs" />
     <Compile Include="ForecastingApi.cs" />
     <Compile Include="ForecastingApiValidators.cs" />
     <Compile Include="HttpMethod.cs" />
     <Compile Include="IForecastingApi.cs" />
     <Compile Include="LokadRequest.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+  <Import Project="$(MSBuildProjectDirectory)\..\..\Resource\Build\MSBuild.Community.Tasks.targets" />
+  <Target Name="BeforeBuild" DependsOnTargets="_Version">
   </Target>
   <Target Name="AfterBuild">
   </Target>
-  -->
+  <Target Name="_Version">
+    <CreateItem Include="**\GlobalAssemblyInfo.cs">
+      <Output ItemName="_VersionPaths" TaskParameter="Include" />
+    </CreateItem>
+    <CreateItem Include="@(_VersionPaths->'%(SubFolder)%(RecursiveDir)VersionAssemblyInfo.cs')">
+      <Output ItemName="_VersionFiles" TaskParameter="Include" />
+    </CreateItem>
+    <Time Format="yyyy-MM-dd HH:mm">
+      <Output TaskParameter="FormattedTime" PropertyName="BuildTime" />
+    </Time>
+    <AssemblyInfo OutputFile="%(_VersionFiles.FullPath)" CodeLanguage="CS" AssemblyVersion="$(Version)" AssemblyFileVersion="$(Version)" AssemblyConfiguration="$(Configuration) built on $(BuildTime)" />
+  </Target>
 </Project>
