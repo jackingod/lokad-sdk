@@ -57,21 +57,9 @@
     <Compile Include="LokadRequest.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(MSBuildProjectDirectory)\..\..\Resource\Build\MSBuild.Community.Tasks.targets" />
-  <Target Name="BeforeBuild" DependsOnTargets="_Version">
+  <!-- <Import Project="$(MSBuildProjectDirectory)\..\..\Resource\Build\MSBuild.Community.Tasks.targets" /> -->
+  <Target Name="BeforeBuild">
   </Target>
   <Target Name="AfterBuild">
-  </Target>
-  <Target Name="_Version">
-    <CreateItem Include="**\GlobalAssemblyInfo.cs">
-      <Output ItemName="_VersionPaths" TaskParameter="Include" />
-    </CreateItem>
-    <CreateItem Include="@(_VersionPaths->'%(SubFolder)%(RecursiveDir)VersionAssemblyInfo.cs')">
-      <Output ItemName="_VersionFiles" TaskParameter="Include" />
-    </CreateItem>
-    <Time Format="yyyy-MM-dd HH:mm">
-      <Output TaskParameter="FormattedTime" PropertyName="BuildTime" />
-    </Time>
-    <AssemblyInfo OutputFile="%(_VersionFiles.FullPath)" CodeLanguage="CS" AssemblyVersion="$(Version)" AssemblyFileVersion="$(Version)" AssemblyConfiguration="$(Configuration) built on $(BuildTime)" />
   </Target>
 </Project>
