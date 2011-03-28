@@ -9,6 +9,7 @@ namespace Lokad.Forecasting.Client.Tests
     [TestFixture]
     public class ForecastingApiTests
     {
+        // identity format "auth-with-key@lokad.com:API KEY"
         private const string Identity = "";
         private const string Endpoint = "http://api.lokad.com/rest/forecasting3";
 

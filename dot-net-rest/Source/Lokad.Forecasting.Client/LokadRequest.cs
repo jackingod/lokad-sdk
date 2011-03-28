@@ -24,7 +24,7 @@ namespace Lokad.Forecasting.Client
         {
             return new LokadRequest
                        {
-                           _identity = Convert.ToBase64String(Encoding.ASCII.GetBytes(identity))
+                           _identity = Convert.ToBase64String(Encoding.ASCII.GetBytes("auth-with-key@lokad.com:" + identity))
                        };
         }
 
@@ -79,9 +79,13 @@ namespace Lokad.Forecasting.Client
                     // if the request completes, we don't try again
                     return webRequest();
                 }
-                catch (WebException)
+                catch (WebException ex)
                 {
-                    if (i < maxAttempts)
+                    HttpStatusCode statusCode = ((HttpWebResponse) ex.Response).StatusCode;
+
+                    if (i < maxAttempts
+                        && statusCode != HttpStatusCode.Unauthorized
+                        && statusCode != HttpStatusCode.BadRequest)
                     {
                         // increasing sleep delay pattern
                         Thread.Sleep((i + 1) * 1000);
