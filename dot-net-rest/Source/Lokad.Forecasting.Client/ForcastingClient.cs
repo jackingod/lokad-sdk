@@ -27,8 +27,16 @@ namespace Lokad.Forecasting.Client
         readonly string _identity;
         readonly IForecastingApi _forecastingApi;
 
-        const string ProductionEndpoint = "http://api.lokad.com/forecasting3.svc";
-        const string SandboxEndpoint = "http://sandbox-api.lokad.com/forecasting3.svc";
+		public IForecastingApi Api { get { return _forecastingApi; } }
+
+		/// <summary>
+		/// Public URL to production endpoint
+		/// </summary>
+        public const string ProductionEndpoint = "http://api.lokad.com/forecasting3.svc";
+		/// <summary>
+		/// Public URL to the sandbox endpoint
+		/// </summary>
+        public const string SandboxEndpoint = "http://sandbox-api.lokad.com/forecasting3.svc";
 
         /// <summary>Create a new client to access a Lokad account.</summary>
         /// <param name="identity">Authentication key to access the Lokad account.</param>
