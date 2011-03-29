@@ -4,3 +4,4 @@ syntax: regexp
 \.cache
 \.suo
 /(bin|obj)/(Debug|Release)/.*
+\.user
