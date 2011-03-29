@@ -27,6 +27,9 @@ namespace Lokad.Forecasting.Client
         readonly string _identity;
         readonly IForecastingApi _forecastingApi;
 
+		/// <summary>
+		/// Gets the underlying API implementation.
+		/// </summary>
 		public IForecastingApi Api { get { return _forecastingApi; } }
 
 		/// <summary>
