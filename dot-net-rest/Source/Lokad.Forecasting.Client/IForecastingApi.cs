@@ -276,6 +276,11 @@ namespace Lokad.Forecasting.Client
         /// </ul>
         /// </returns>
         ForecastCollection GetForecasts(string identity, string datasetName, string[] serieNames);
+
+		/// <summary>
+		/// Endpoint URL to which this API is connected
+		/// </summary>
+    	string Endpoint { get; }
     }
 
     /// <summary>Gather error codes as returned by Forecasting API v3.</summary>
