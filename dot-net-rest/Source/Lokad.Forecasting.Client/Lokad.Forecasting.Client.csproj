@@ -49,7 +49,7 @@
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ForcastingClient.cs" />
+    <Compile Include="ForecastingClient.cs" />
     <Compile Include="ForecastingApi.cs" />
     <Compile Include="ForecastingApiValidators.cs" />
     <Compile Include="HttpMethod.cs" />
