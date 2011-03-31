@@ -407,6 +407,29 @@ namespace Lokad.Forecasting.Client
             return RetryPolicy(() => GetForecastsInternal(datasetName, serieNames));
         }
 
+		/// <summary>
+		/// Gets the forecasts from a specified datasets.
+		/// </summary>
+		/// <param name="dataset">Targeted dataset.</param>
+		/// <param name="series">Targeted series. Series that do not
+		/// exists in the targeted dataset are ignored.</param>
+		/// <remark>Call is blocking until the forecasts are ready
+		/// and downloaded.</remark>
+		/// <exception cref="ArgumentNullException">Thrown if any of the argument is null.</exception>
+		/// <exception cref="ArgumentException">Thrown if the arguments are not compliant
+		/// with the Forecasting API specification.</exception>
+		/// <exception cref="InvalidOperationException">Thrown if the access rights are incorrect,
+		/// if the dataset does not exists, or if the service is down.</exception>
+		/// <seealso cref="IForecastingApi.GetForecastStatus"/>
+		/// <seealso cref="IForecastingApi.GetForecasts"/>
+		public ForecastSerie[] GetForecasts(Dataset dataset, TimeSerie[] series)
+		{
+			var serieNames = series.Select(s => s.Name).ToArray();
+			var datasetName = dataset.Name;
+			// catching potential network timeouts)
+			return RetryPolicy(() => GetForecastsInternal(datasetName, serieNames));
+		}
+
         ForecastSerie[] GetForecastsInternal(string datasetName, string[] serieNames)
         {
             ValidateSerieNames(datasetName, serieNames);
