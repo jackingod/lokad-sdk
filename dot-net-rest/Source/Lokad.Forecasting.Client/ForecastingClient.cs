@@ -21,6 +21,12 @@ namespace Lokad.Forecasting.Client
         /// yet, this value can be lowered if timeouts are encountered.</summary>
         int _seriesSliceLength = 100;
 
+		/// <summary>
+		/// Based on the implicit request limitation of 2KB, which 
+		/// can't be changed on Azure at the moment
+		/// </summary>
+    	int _forecastsSliceLength = 50;
+
         /// <summary>Same than <see cref="Constants.SeriesSliceLength"/> but for larger series.</summary>
         int _midSeriesSliceLength = 10;
 
@@ -451,15 +457,15 @@ namespace Lokad.Forecasting.Client
             var forecasts = new Dictionary<string, ForecastSerie>(serieNames.Length);
 
             // A subtle situation may arise if the forecasts are so large that
-            // they can't be retrieved in batches of 100 while still be compliant
+            // they can't be retrieved in batches of 50 while still be compliant
             // with 4MB limitation.
 
-            for (var i = 0; i < serieNames.Length; i += _seriesSliceLength)
+            for (var i = 0; i < serieNames.Length; i += _forecastsSliceLength)
             {
                 // No 'Slice()' method available 
                 var forecastCollection =
                     _forecastingApi.GetForecasts(_identity, datasetName,
-                        serieNames.Skip(i).Take(_seriesSliceLength).ToArray());
+                        serieNames.Skip(i).Take(_forecastsSliceLength).ToArray());
 
                 WrapAndThrow(forecastCollection.ErrorCode);
 
@@ -553,12 +559,14 @@ namespace Lokad.Forecasting.Client
 
                     if (i >= 3) // at 3 timeouts, we switch to the 'slow mode'.
                     {
+                    	_forecastsSliceLength = 10;
                         _seriesSliceLength = 10;
                         _midSeriesSliceLength = 1;
                     }
 
                     if (i >= 6) // at 6 timeouts, we switch to the 'extra slow mode'.
                     {
+                    	_forecastsSliceLength = 1;
                         _seriesSliceLength = 1;
                         _midSeriesSliceLength = 1;
                     }
