@@ -71,6 +71,7 @@ namespace Lokad.Forecasting.Client
                         {
                             tags.Add(new XElement("string",tag));
                         }
+                        timeserie.Add(tags);
                     }
 
                     if (serie.Events != null && serie.Events.Any())
@@ -86,9 +87,10 @@ namespace Lokad.Forecasting.Client
                             var eventTags = new XElement("Tags");
                             foreach (var tag in timeEvent.Tags)
                             {
-                                e.Add(new XElement("string",tag));
+                                eventTags.Add(new XElement("string", tag));
                             }
                             e.Add(eventTags);
+                            events.Add(e);
                         }
                         timeserie.Add(events);
                     }
