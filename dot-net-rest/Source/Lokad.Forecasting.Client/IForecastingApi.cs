@@ -42,7 +42,7 @@ namespace Lokad.Forecasting.Client
         /// <para>Datasets represent the elementary data containers offered by Lokad
         /// to store the historical data. A dataset defines also the forecasts
         /// to be performed on the data through the <c>Period</c> representing
-        /// the agregation level of the forecasts and the <c>Horizon</c>, the
+        /// the aggregation level of the forecasts and the <c>Horizon</c>, the
         /// number of periods to be forecasted ahead.
         /// </para>
         /// <para>Datasets are identified according to their names.
@@ -140,7 +140,7 @@ namespace Lokad.Forecasting.Client
         ///   <li>The maximal number of time-values per serie is 100,000.</li>
         /// </ul>
         /// Then, for each time-serie, all tags are expected to be distinct if any.
-        /// For each event, all tags are expeceted to be distinct too. Each event
+        /// For each event, all tags are expected to be distinct too. Each event
         /// needs to be associated to at least one tag.
         /// </para>
         /// </remarks>

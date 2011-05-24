@@ -217,7 +217,7 @@ namespace Lokad.Forecasting.Client
         /// </param>
         /// <remarks>
         /// The implementation takes care of enforcing the capacity limitations of the API.
-        /// In particular, the array of series get splitted as needed into small sets
+        /// In particular, the array of series get split as needed into small sets
         /// before being pushed toward the Forecasting API.
         /// </remarks>
         /// <exception cref="ArgumentNullException">Thrown if one of the argument is null.</exception>

@@ -272,7 +272,7 @@ namespace Lokad.Forecasting.Client.Tests
                                    Tags = new [] {"T" + i},
                                    Events = new[] { new EventValue()
                                                         {
-                                                            Tags = new[] {"New E" + i},
+                                                            Tags = new[] {"foo" + i},
                                                             KnownSince = new DateTime(2001, 1, 1).AddDays(i),
                                                             Time = new DateTime(2001, 1, 1).AddDays(i)
                                                         }, }
