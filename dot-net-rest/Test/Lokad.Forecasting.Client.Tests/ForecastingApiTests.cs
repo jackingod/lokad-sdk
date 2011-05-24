@@ -9,9 +9,9 @@ namespace Lokad.Forecasting.Client.Tests
     [TestFixture]
     public class ForecastingApiTests
     {
-        // identity format "auth-with-key@lokad.com:API KEY"
-        private const string Identity = "";
-        private const string Endpoint = "http://api.lokad.com/rest/forecasting3";
+        // identity format "API KEY"
+        private const string Identity = "32h7sAEATW0ohaw3OXstys/P45YqwzUIx6BRPCk=";
+        private const string Endpoint = "http://api.lokad.com/rest/forecasting3";//http://localhost:50764/rest/forecasting3.svc";//
 
         private IForecastingApi _forecastingApi;
 
@@ -120,6 +120,39 @@ namespace Lokad.Forecasting.Client.Tests
             var errorCode = _forecastingApi.UpsertTimeSeries(Identity, dataset.Name, timeseries, false);
 
             Assert.IsEmpty(errorCode);
+        }
+
+        [Test]
+        public void Data_round_trip()
+        {
+            // insert test dataset
+            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            var dataset = new Dataset
+            {
+                Name = dataSetName,
+                Horizon = 60,
+                Period = PeriodCodes.Week
+            };
+
+            _forecastingApi.InsertDataset(Identity, dataset);
+
+            var timeseries = GetTimeSeries(100);
+
+            var errorCode = _forecastingApi.UpsertTimeSeries(Identity, dataset.Name, timeseries, false);
+
+            Assert.IsEmpty(errorCode);
+
+            var client = new ForecastingClient(Identity, _forecastingApi);
+            var loaded = client.ListTimeSeries(dataset.Name).ToDictionary(s => s.Name);
+
+            foreach (var exp in timeseries)
+            {
+                var actual = loaded[exp.Name];
+                CollectionAssert.AreEquivalent(exp.Tags, actual.Tags, "Tags equal for {0}", exp.Name);
+                
+                CollectionAssert.AreEqual(exp.Values.Select(s => s.ToString()).ToArray(), actual.Values.Select(s => s.ToString()).ToArray(), "Values are equal");
+                CollectionAssert.AreEqual(exp.Events.Select(s => s.ToString()).ToArray(), actual.Events.Select(s => s.ToString()).ToArray(), "Events are equal");
+            }
         }
 
         [Test]
@@ -235,8 +268,17 @@ namespace Lokad.Forecasting.Client.Tests
                 array[i] = new TimeSerie
                                {
                                    Name = "t" + i,
-                                   Values = new[] {new TimeValue {Time = new DateTime(2001, 1, 1), Value = 1.0}}
-                               };
+                                   Values = new[] {new TimeValue {Time = new DateTime(2001, 1, 1).AddDays(i), Value = i}},
+                                   Tags = new [] {"T" + i},
+                                   Events = new[] { new EventValue()
+                                                        {
+                                                            Tags = new[] {"New E" + i},
+                                                            KnownSince = new DateTime(2001, 1, 1).AddDays(i),
+                                                            Time = new DateTime(2001, 1, 1).AddDays(i)
+                                                        }, }
+
+                               }
+                               ;
             }
             return array;
         }
