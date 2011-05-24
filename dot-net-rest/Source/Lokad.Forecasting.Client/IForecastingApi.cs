@@ -409,6 +409,11 @@ namespace Lokad.Forecasting.Client
 
         /// <summary>Original discovery date of the event.</summary>
         public DateTime KnownSince { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("Tags: {0}, Time: {1}, KnownSince: {2}", string.Join(",", Tags), Time, KnownSince);
+        }
     }
 
     /// <seealso cref="IForecastingApi.GetForecastStatus"/>
