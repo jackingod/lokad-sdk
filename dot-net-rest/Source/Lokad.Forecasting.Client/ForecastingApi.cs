@@ -79,7 +79,7 @@ namespace Lokad.Forecasting.Client
                         var events = new XElement("Events");
                         foreach (var timeEvent in serie.Events)
                         {
-                            var e = new XElement("Event",
+                            var e = new XElement("EventValue",
                                                  new XElement("Time", timeEvent.Time),
                                                  new XElement("KnownSince", timeEvent.KnownSince));
 
