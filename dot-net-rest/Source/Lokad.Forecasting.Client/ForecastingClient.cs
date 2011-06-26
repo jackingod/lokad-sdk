@@ -42,10 +42,6 @@ namespace Lokad.Forecasting.Client
 		/// Public URL to production endpoint
 		/// </summary>
         public const string ProductionEndpoint = "http://api.lokad.com/rest/forecasting3";
-		/// <summary>
-		/// Public URL to the sandbox endpoint
-		/// </summary>
-        public const string SandboxEndpoint = "http://sandbox-api.lokad.com/rest/forecasting3";
 
         /// <summary>Create a new client to access a Lokad account.</summary>
         /// <param name="identity">Authentication key to access the Lokad account.</param>
@@ -69,18 +65,8 @@ namespace Lokad.Forecasting.Client
                 throw new ArgumentException("Key is too short.", "identity");
             }
 
-            // Extracting the server code from the key (to auto-plug the URL)
-
-            var body = bytes.Skip(4).ToArray();
-
-            // body[0] contains the API version
-            // body[1] contains the server (was 1 = Production, 2 = Sandbox, but not used anymore)
-
-            // By default, we plug the production.
-            var endpoint = body[1] != 2 ? ProductionEndpoint : SandboxEndpoint;
-
             _identity = identity;
-            _forecastingApi = new ForecastingApi(endpoint);
+            _forecastingApi = new ForecastingApi(ProductionEndpoint);
         }
 
         /// <summary>Create a new client to access a Lokad account.</summary>
