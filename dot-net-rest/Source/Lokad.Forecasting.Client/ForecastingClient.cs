@@ -21,11 +21,11 @@ namespace Lokad.Forecasting.Client
         /// yet, this value can be lowered if timeouts are encountered.</summary>
         int _seriesSliceLength = 100;
 
-		/// <summary>
-		/// Based on the implicit request limitation of 2KB, which 
-		/// can't be changed on Azure at the moment
-		/// </summary>
-    	int _forecastsSliceLength = 50;
+        /// <summary>
+        /// Based on the implicit request limitation of 2KB, which 
+        /// can't be changed on Azure at the moment
+        /// </summary>
+        int _forecastsSliceLength = 50;
 
         /// <summary>Same than <see cref="Constants.SeriesSliceLength"/> but for larger series.</summary>
         int _midSeriesSliceLength = 10;
@@ -33,14 +33,14 @@ namespace Lokad.Forecasting.Client
         readonly string _identity;
         readonly IForecastingApi _forecastingApi;
 
-		/// <summary>
-		/// Gets the underlying API implementation.
-		/// </summary>
-		public IForecastingApi Api { get { return _forecastingApi; } }
+        /// <summary>
+        /// Gets the underlying API implementation.
+        /// </summary>
+        public IForecastingApi Api { get { return _forecastingApi; } }
 
-		/// <summary>
-		/// Public URL to production endpoint
-		/// </summary>
+        /// <summary>
+        /// Public URL to production endpoint
+        /// </summary>
         public const string ProductionEndpoint = "http://api.lokad.com/rest/forecasting3";
 
         /// <summary>Create a new client to access a Lokad account.</summary>
@@ -399,28 +399,28 @@ namespace Lokad.Forecasting.Client
             return RetryPolicy(() => GetForecastsInternal(datasetName, serieNames));
         }
 
-		/// <summary>
-		/// Gets the forecasts from a specified datasets.
-		/// </summary>
-		/// <param name="dataset">Targeted dataset.</param>
-		/// <param name="series">Targeted series. Series that do not
-		/// exists in the targeted dataset are ignored.</param>
-		/// <remark>Call is blocking until the forecasts are ready
-		/// and downloaded.</remark>
-		/// <exception cref="ArgumentNullException">Thrown if any of the argument is null.</exception>
-		/// <exception cref="ArgumentException">Thrown if the arguments are not compliant
-		/// with the Forecasting API specification.</exception>
-		/// <exception cref="InvalidOperationException">Thrown if the access rights are incorrect,
-		/// if the dataset does not exists, or if the service is down.</exception>
-		/// <seealso cref="IForecastingApi.GetForecastStatus"/>
-		/// <seealso cref="IForecastingApi.GetForecasts"/>
-		public ForecastSerie[] GetForecasts(Dataset dataset, TimeSerie[] series)
-		{
-			var serieNames = series.Select(s => s.Name).ToArray();
-			var datasetName = dataset.Name;
-			// catching potential network timeouts)
-			return RetryPolicy(() => GetForecastsInternal(datasetName, serieNames));
-		}
+        /// <summary>
+        /// Gets the forecasts from a specified datasets.
+        /// </summary>
+        /// <param name="dataset">Targeted dataset.</param>
+        /// <param name="series">Targeted series. Series that do not
+        /// exists in the targeted dataset are ignored.</param>
+        /// <remark>Call is blocking until the forecasts are ready
+        /// and downloaded.</remark>
+        /// <exception cref="ArgumentNullException">Thrown if any of the argument is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the arguments are not compliant
+        /// with the Forecasting API specification.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the access rights are incorrect,
+        /// if the dataset does not exists, or if the service is down.</exception>
+        /// <seealso cref="IForecastingApi.GetForecastStatus"/>
+        /// <seealso cref="IForecastingApi.GetForecasts"/>
+        public ForecastSerie[] GetForecasts(Dataset dataset, TimeSerie[] series)
+        {
+            var serieNames = series.Select(s => s.Name).ToArray();
+            var datasetName = dataset.Name;
+            // catching potential network timeouts)
+            return RetryPolicy(() => GetForecastsInternal(datasetName, serieNames));
+        }
 
         ForecastSerie[] GetForecastsInternal(string datasetName, string[] serieNames)
         {
@@ -545,14 +545,14 @@ namespace Lokad.Forecasting.Client
 
                     if (i >= 3) // at 3 timeouts, we switch to the 'slow mode'.
                     {
-                    	_forecastsSliceLength = 10;
+                        _forecastsSliceLength = 10;
                         _seriesSliceLength = 10;
                         _midSeriesSliceLength = 1;
                     }
 
                     if (i >= 6) // at 6 timeouts, we switch to the 'extra slow mode'.
                     {
-                    	_forecastsSliceLength = 1;
+                        _forecastsSliceLength = 1;
                         _seriesSliceLength = 1;
                         _midSeriesSliceLength = 1;
                     }

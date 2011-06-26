@@ -149,9 +149,9 @@ namespace Lokad.Forecasting.Client
             return request.GetResponse<ForecastCollection>(url, String.Empty, HttpMethod.Get);
         }
 
-    	public string Endpoint
-    	{
-			get { return _endpoint; }
-    	}
+        public string Endpoint
+        {
+            get { return _endpoint; }
+        }
     }
 }
