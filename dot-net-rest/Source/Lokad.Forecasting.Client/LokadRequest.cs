@@ -81,11 +81,16 @@ namespace Lokad.Forecasting.Client
                 }
                 catch (WebException ex)
                 {
-                    HttpStatusCode statusCode = ((HttpWebResponse) ex.Response).StatusCode;
+                    var statusCode =HttpStatusCode.InternalServerError;
+                    if (ex.Response != null)
+                    {
+                        statusCode = ((HttpWebResponse)ex.Response).StatusCode;
+                    }
 
                     if (i < maxAttempts
                         && statusCode != HttpStatusCode.Unauthorized
-                        && statusCode != HttpStatusCode.BadRequest)
+                        && statusCode != HttpStatusCode.BadRequest
+                        && statusCode != HttpStatusCode.InternalServerError)
                     {
                         // increasing sleep delay pattern
                         Thread.Sleep((i + 1) * 1000);
