@@ -137,7 +137,16 @@ namespace Lokad.Forecasting.Client
                 {
                     if (timeSerie.Values[i + 1].Time <= timeSerie.Values[i].Time)
                     {
-                        throw new ArgumentException("Time-serie is not properly ordered.", "timeSerie");
+                        var message = string.Format("Time-serie '{0}' is not properly ordered.", timeSerie.Name);
+                        throw new ArgumentException(message, "timeSerie");
+                    }
+                }
+                for (int i = 0; i < timeSerie.Values.Length; i++)
+                {
+                    if (timeSerie.Values[i].Time.Kind == DateTimeKind.Local)
+                    {
+                        var message = string.Format("Time serie '{0}' has value ({1}) with DateTimeKind.Local. It should be either Unspecified or Utc", timeSerie.Name, i);
+                        throw new ArgumentException(message, "timeSerie");
                     }
                 }
             }

@@ -86,7 +86,7 @@ namespace Lokad.Forecasting.Client
                     {
                         statusCode = ((HttpWebResponse)ex.Response).StatusCode;
                     }
-
+                    
                     if (i < maxAttempts
                         && statusCode != HttpStatusCode.Unauthorized
                         && statusCode != HttpStatusCode.BadRequest
