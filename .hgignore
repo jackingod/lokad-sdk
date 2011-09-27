@@ -1,7 +1,0 @@
-syntax: glob
-dot-net-rest/_ReSharper.*
-syntax: regexp
-\.cache
-\.suo
-/(bin|obj)/(Debug|Release)/.*
-\.user
