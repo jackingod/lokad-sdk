@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Lokad SAS")]
 [assembly: AssemblyProduct("Lokad.Forecasting.Client")]
-[assembly: AssemblyCopyright("Copyright © Lokad 2010")]
+[assembly: AssemblyCopyright("Copyright © Lokad 2010-2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

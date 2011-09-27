@@ -312,7 +312,7 @@ namespace Lokad.Forecasting.Client
         /// Thrown is the dataset name is not compliant with Forecasting API specification.
         /// </exception>
         /// <exception cref="InvalidOperationException">
-        /// Thrown if the access rigths are incorrect, or if the dataset does not exists,
+        /// Thrown if the access rights are incorrect, or if the dataset does not exists,
         /// or if the service is down.</exception>
         /// <seealso cref="IForecastingApi.ListTimeSeries"/>
         public IEnumerable<TimeSerie> ListTimeSeries(string datasetName)
