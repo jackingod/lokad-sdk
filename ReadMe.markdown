@@ -24,3 +24,4 @@ The Forecasting Client is a stand-alone .NET wrapper library around the [REST Fo
 ## Apps using the forecasting client
 * Lokad Salescast - [product info] (http://www.lokad.com/salescast-sales-forecasting-software.ashx)
 * Lokad Callcalc - [product info] (http://www.lokad.com/call-center-calculator-software.ashx)
+* Lokad Shelfcheck - [product info] (http://www.lokad.com/shelfcheck-on-shelf-availability-optimization.ashx)
