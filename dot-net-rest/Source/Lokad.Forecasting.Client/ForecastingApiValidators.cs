@@ -13,7 +13,7 @@ namespace Lokad.Forecasting.Client
     {
         public static readonly Regex DefaultNamePattern = new Regex("^[a-zA-Z0-9]{1,32}$", RegexOptions.Compiled);
 
-        readonly static string[] HighPeriods = new[] { PeriodCodes.QuarterHour, PeriodCodes.HalfHour, PeriodCodes.Hour };
+        readonly static string[] IntraDayPeriods = new[] { PeriodCodes.QuarterHour, PeriodCodes.HalfHour, PeriodCodes.Hour };
         readonly static string[] AllPeriods = new[] { PeriodCodes.QuarterHour, PeriodCodes.HalfHour, PeriodCodes.Hour,
 													  PeriodCodes.Day, PeriodCodes.Week, PeriodCodes.Month};
 
@@ -47,12 +47,19 @@ namespace Lokad.Forecasting.Client
             }
 
             // 'Horizon' validation
-            if ((HighPeriods).Contains(dataset.Period))
+            if ((IntraDayPeriods).Contains(dataset.Period))
             {
                 // high-frequency horizons
                 if (dataset.Horizon <= 0 || dataset.Horizon > 10000)
                 {
                     throw new ArgumentOutOfRangeException("dataset", "Horizon should be comprised between 1 and 10000.");
+                }
+            }
+            else if(PeriodCodes.Day == dataset.Period)
+            {
+                if(dataset.Horizon <= 0 || dataset.Horizon > 400)
+                {
+                    throw new ArgumentOutOfRangeException("dataset", "Horizon should be comprised between 1 and 400.");
                 }
             }
             else
