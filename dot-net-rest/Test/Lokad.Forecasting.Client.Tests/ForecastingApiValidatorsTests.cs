@@ -79,6 +79,33 @@ namespace Lokad.Forecasting.Client.Tests
 			dataset.Validate();
 		}
 
+        [Test]
+        public void IsValidDataset4()
+        {
+            var dataset = new Dataset
+            {
+                Name = "validname",
+                Period = "day",
+                Horizon = 400
+            };
+
+            dataset.Validate();
+        }
+
+        [Test]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
+        public void IsValidDataset5()
+        {
+            var dataset = new Dataset
+            {
+                Name = "validname",
+                Period = "day",
+                Horizon = 401
+            };
+
+            dataset.Validate();
+        }
+
 		[Test]
 		public void IsValidTimeSerie0()
 		{
