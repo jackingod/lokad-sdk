@@ -43,19 +43,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\GlobalAssemblyInfo.cs">
-      <Link>Properties\GlobalAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\VersionAssemblyInfo.cs">
-      <Link>Properties\VersionAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="ForecastingClient.cs" />
     <Compile Include="ForecastingApi.cs" />
     <Compile Include="ForecastingApiValidators.cs" />
     <Compile Include="HttpMethod.cs" />
     <Compile Include="IForecastingApi.cs" />
     <Compile Include="LokadRequest.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- <Import Project="$(MSBuildProjectDirectory)\..\..\Resource\Build\MSBuild.Community.Tasks.targets" /> -->
   <Target Name="BeforeBuild">
