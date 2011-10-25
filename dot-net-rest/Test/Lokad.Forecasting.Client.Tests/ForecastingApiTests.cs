@@ -18,7 +18,8 @@ namespace Lokad.Forecasting.Client.Tests
         [SetUp]
         public void Setup()
         {
-            _forecastingApi = new ForecastingApi(Endpoint);
+            // Current version of forecasting API v3 cannot process compressed requests.
+            _forecastingApi = new ForecastingApi(Endpoint, false);
         }
 
         [Test]
@@ -26,7 +27,7 @@ namespace Lokad.Forecasting.Client.Tests
         {
             var dataset = new Dataset
                               {
-                                  Name = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmss"),
+                                  Name = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
                                   Horizon = 60,
                                   Period = PeriodCodes.Week
                               };
@@ -40,7 +41,7 @@ namespace Lokad.Forecasting.Client.Tests
         {
             var dataset = new Dataset
             {
-                Name = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmss"),
+                Name = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
                 Horizon = 60,
                 Period = "millennium"
             };
@@ -54,7 +55,7 @@ namespace Lokad.Forecasting.Client.Tests
         {
             var dataset = new Dataset
             {
-                Name = "".PadLeft(33),
+                Name = "Dataset".PadLeft(1024,'d'),
                 Horizon = 60,
                 Period = PeriodCodes.Week
             };
@@ -68,7 +69,7 @@ namespace Lokad.Forecasting.Client.Tests
         {
             var dataset = new Dataset
             {
-                Name = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmss"),
+                Name = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
                 Horizon = 60,
                 Period = PeriodCodes.Week
             };
@@ -85,7 +86,7 @@ namespace Lokad.Forecasting.Client.Tests
         public void DeleteDatasetTest()
         {
             // insert test dataset
-            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
             {
                 Name = dataSetName,
@@ -105,7 +106,7 @@ namespace Lokad.Forecasting.Client.Tests
         public void UpsertTimeSeriesTest()
         {
             // insert test dataset
-            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
             {
                 Name = dataSetName,
@@ -126,7 +127,7 @@ namespace Lokad.Forecasting.Client.Tests
         public void Data_round_trip()
         {
             // insert test dataset
-            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
             {
                 Name = dataSetName,
@@ -138,12 +139,13 @@ namespace Lokad.Forecasting.Client.Tests
 
             var timeseries = GetTimeSeries(100);
 
-            var errorCode = _forecastingApi.UpsertTimeSeries(Identity, dataset.Name, timeseries, false);
+            var errorCode = _forecastingApi.UpsertTimeSeries(Identity, dataset.Name, timeseries, true);
 
             Assert.IsEmpty(errorCode);
 
             var client = new ForecastingClient(Identity, _forecastingApi);
-            var loaded = client.ListTimeSeries(dataset.Name).ToDictionary(s => s.Name);
+            var data = client.ListTimeSeries(dataset.Name);
+            var loaded = data.ToDictionary(s => s.Name);
 
             foreach (var exp in timeseries)
             {
@@ -159,7 +161,7 @@ namespace Lokad.Forecasting.Client.Tests
         public void ListTimeSeriesTest()
         {
              // insert test dataset
-            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
             {
                 Name = dataSetName,
@@ -179,7 +181,7 @@ namespace Lokad.Forecasting.Client.Tests
         public void DeleteTimeSeriesTest()
         {
             // insert test dataset
-            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
             {
                 Name = dataSetName,
@@ -203,7 +205,7 @@ namespace Lokad.Forecasting.Client.Tests
         public void GetForecastsStatusTest()
         {
             // insert test dataset
-            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
             {
                 Name = dataSetName,
@@ -227,7 +229,7 @@ namespace Lokad.Forecasting.Client.Tests
         public void GetForecastsTest()
         {
             // insert test dataset
-            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
             {
                 Name = dataSetName,
