@@ -15,11 +15,13 @@ namespace Lokad.Forecasting.Client
     public class ForecastingApi : IForecastingApi
     {
         private readonly string _endpoint;
+        private readonly bool _compressRequest;
 
-        public ForecastingApi(string endpoint)
+        public ForecastingApi(string endpoint, bool compressRequest = false)
         {
             if (String.IsNullOrEmpty(endpoint)) throw new ArgumentNullException("endpoint");
             _endpoint = endpoint;
+            _compressRequest = compressRequest;
         }
 
         public string InsertDataset(string identity, Dataset dataset)
@@ -31,7 +33,7 @@ namespace Lokad.Forecasting.Client
                 new XElement("Period", dataset.Period),
                 new XElement("Horizon", dataset.Horizon));
 
-            var request = LokadRequest.Create(identity);
+            var request = LokadRequest.Create(identity, _compressRequest);
 
             return request.GetResponse<string>(url, document.ToString(), HttpMethod.Put);
         }
@@ -56,7 +58,7 @@ namespace Lokad.Forecasting.Client
         {
             var url = _endpoint + "/series/" + datasetName + (enableMerge ? "?merge=true" : String.Empty);
 
-            var request = LokadRequest.Create(identity);
+            var request = LokadRequest.Create(identity, _compressRequest);
 
             var content1 = new XElement("TimeSeries");
             if (timeSeries.Any())
@@ -120,7 +122,7 @@ namespace Lokad.Forecasting.Client
             var url = _endpoint + "/series/" + datasetName + (String.IsNullOrEmpty(continuationToken)
                           ? String.Empty
                           : "/" + continuationToken);
-            var request = LokadRequest.Create(identity);
+            var request = LokadRequest.Create(identity, _compressRequest);
 
             return request.GetResponse<TimeSerieCollection>(url, String.Empty, HttpMethod.Get);
         }
