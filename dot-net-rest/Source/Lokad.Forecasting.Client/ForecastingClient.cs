@@ -32,6 +32,7 @@ namespace Lokad.Forecasting.Client
 
         readonly string _identity;
         readonly IForecastingApi _forecastingApi;
+        private bool _compressRequest;
 
         /// <summary>
         /// Gets the underlying API implementation.
@@ -45,8 +46,9 @@ namespace Lokad.Forecasting.Client
 
         /// <summary>Create a new client to access a Lokad account.</summary>
         /// <param name="identity">Authentication key to access the Lokad account.</param>
+        /// <param name="compressRequest">Use gzip compression of the request stream.</param>
         /// <remarks>The URL endpoint of the service is inferred from the key.</remarks>
-        public ForecastingClient(string identity)
+        public ForecastingClient(string identity, bool compressRequest = false)
         {
             // Validating the format of the key.
             byte[] bytes;
@@ -66,24 +68,28 @@ namespace Lokad.Forecasting.Client
             }
 
             _identity = identity;
-            _forecastingApi = new ForecastingApi(ProductionEndpoint);
+            
+            _forecastingApi = new ForecastingApi(ProductionEndpoint, compressRequest);
         }
 
         /// <summary>Create a new client to access a Lokad account.</summary>
         /// <param name="identity">Authentication key to access the Lokad account.</param>
         /// <param name="endpoint"></param>
+        /// <param name="compressRequest">Use gzip compression of the request stream.</param>
         /// <remarks>The URL endpoint of the service is inferred from the key.</remarks>
-        public ForecastingClient(string identity, string endpoint)
+        public ForecastingClient(string identity, string endpoint, bool compressRequest = false)
         {
             _identity = identity;
-            _forecastingApi = new ForecastingApi(endpoint);
+            _compressRequest = compressRequest;
+            _forecastingApi = new ForecastingApi(endpoint, compressRequest);
         }
 
         /// <summary>Access to the underlying client implementation.</summary>
-        public ForecastingClient(string identity, IForecastingApi forecastingApi)
+        public ForecastingClient(string identity, IForecastingApi forecastingApi, bool compressRequest = false)
         {
             _identity = identity;
             _forecastingApi = forecastingApi;
+            _compressRequest = compressRequest;
         }
 
         /// <summary>Insert a dataset into the Lokad account.</summary>

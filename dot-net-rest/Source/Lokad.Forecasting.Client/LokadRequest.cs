@@ -5,9 +5,11 @@
 
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
@@ -19,12 +21,14 @@ namespace Lokad.Forecasting.Client
     internal class LokadRequest
     {
         private string _identity;
+        private bool _compressRequest;
 
-        public static LokadRequest Create(string identity)
+        public static LokadRequest Create(string identity, bool compressRequest = false)
         {
             return new LokadRequest
                        {
-                           _identity = Convert.ToBase64String(Encoding.ASCII.GetBytes("auth-with-key@lokad.com:" + identity))
+                           _identity = Convert.ToBase64String(Encoding.ASCII.GetBytes("auth-with-key@lokad.com:" + identity)),
+                           _compressRequest = compressRequest
                        };
         }
 
@@ -34,15 +38,42 @@ namespace Lokad.Forecasting.Client
             
             request.Method = method;
             request.Headers.Add(HttpRequestHeader.Authorization, "Basic " + _identity);
-            request.ContentType = "application/xml";
-
+            
             if (!String.IsNullOrEmpty(content))
             {
+                request.ContentType = "application/xml";
+                
                 var bytes = Encoding.ASCII.GetBytes(content);
-                request.ContentLength = bytes.Length;
-                var input = request.GetRequestStream();
-                input.Write(bytes, 0, bytes.Length);
-                input.Close();
+                
+                request.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip");
+
+                if (_compressRequest)
+                {
+                    request.Headers.Add(HttpRequestHeader.ContentEncoding, "gzip");
+
+                    // compress content
+                    var ms = new MemoryStream();
+                    var compressor = new GZipStream(ms, CompressionMode.Compress, true);
+                    compressor.Write(bytes, 0, bytes.Length);
+                    compressor.Close();
+
+                    request.ContentLength = ms.Length;
+
+                    ms.Position = 0;
+
+                    // write data to request stream
+                    var stream = request.GetRequestStream();
+                    stream.Write(ms.ToArray(), 0, (int) ms.Length);
+                    stream.Close();
+                }
+                else
+                {
+                    request.ContentLength = bytes.Length;
+
+                    var requestStream = request.GetRequestStream();
+                    requestStream.Write(bytes, 0, bytes.Length);
+                    requestStream.Close();
+                }
             }
             else
             {
@@ -52,7 +83,17 @@ namespace Lokad.Forecasting.Client
             var response = RetryPolicy(() => request.GetResponse());
 
             var output = response.GetResponseStream();
-
+            
+            // accept compressed response stream
+            var contentEncoding = response.Headers[HttpResponseHeader.ContentEncoding];
+            if (!string.IsNullOrEmpty(contentEncoding))
+            {
+                if (contentEncoding.IndexOf("gzip", StringComparison.InvariantCultureIgnoreCase)>-1)
+                {
+                    output = new GZipStream(response.GetResponseStream(), CompressionMode.Decompress, true);
+                }
+            }
+            
             if (typeof(TResult) == typeof(String))
             {
                 var reader = new StreamReader(output);
@@ -62,8 +103,11 @@ namespace Lokad.Forecasting.Client
 
             using (output)
             {
-                var serializer = new XmlSerializer(typeof(TResult));
-                return (TResult)serializer.Deserialize(output);
+                var reader = XmlReader.Create(output);
+
+                var serializer = new XmlSerializer(typeof(TResult), "");
+                var result = serializer.Deserialize(reader);
+                return (TResult) result;
             }
         }
 
