@@ -75,39 +75,37 @@ namespace Lokad.Forecasting.Client
                     requestStream.Close();
                 }
             }
-            else
+
+            using (var response = RetryPolicy(() => request.GetResponse()))
             {
-                request.ContentLength = 0;
-            }
-
-            var response = RetryPolicy(() => request.GetResponse());
-
-            var output = response.GetResponseStream();
+                var output = response.GetResponseStream();
             
-            // accept compressed response stream
-            var contentEncoding = response.Headers[HttpResponseHeader.ContentEncoding];
-            if (!string.IsNullOrEmpty(contentEncoding))
-            {
-                if (contentEncoding.IndexOf("gzip", StringComparison.InvariantCultureIgnoreCase)>-1)
+                // accept compressed response stream
+                var contentEncoding = response.Headers[HttpResponseHeader.ContentEncoding];
+                if (!string.IsNullOrEmpty(contentEncoding))
                 {
-                    output = new GZipStream(response.GetResponseStream(), CompressionMode.Decompress, true);
+                    if (contentEncoding.IndexOf("gzip", StringComparison.InvariantCultureIgnoreCase)>-1)
+                    {
+                        output = new GZipStream(response.GetResponseStream(), CompressionMode.Decompress, true);
+                    }
                 }
-            }
-            
-            if (typeof(TResult) == typeof(String))
-            {
-                var reader = new StreamReader(output);
-                var result = (object) XElement.Parse(reader.ReadToEnd()).Value;
-                return (TResult) result;
-            }
-
-            using (output)
-            {
-                var reader = XmlReader.Create(output);
-
-                var serializer = new XmlSerializer(typeof(TResult), "");
-                var result = serializer.Deserialize(reader);
-                return (TResult) result;
+                using (output)
+                {
+                    if (typeof(TResult) == typeof(String))
+                    {
+                        var reader = new StreamReader(output);
+                        var resultString = reader.ReadToEnd();
+                        var result = (object)XElement.Parse(resultString).Value;
+                        return (TResult) result;
+                    }
+                    else
+                    {
+                        var reader = XmlReader.Create(output);
+                        var serializer = new XmlSerializer(typeof(TResult), "");
+                        var result = serializer.Deserialize(reader);
+                        return (TResult)result;
+                    }
+                }
             }
         }
 
