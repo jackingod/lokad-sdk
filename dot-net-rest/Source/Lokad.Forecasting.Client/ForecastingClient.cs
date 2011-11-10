@@ -103,7 +103,7 @@ namespace Lokad.Forecasting.Client
         /// if the service happens to be down at the time.
         /// </exception>
         /// <seealso cref="IForecastingApi.InsertDataset"/>
-        public void InsertDataset(Dataset dataset)
+        public virtual void InsertDataset(Dataset dataset)
         {
             dataset.Validate();
             var errorCode = _forecastingApi.InsertDataset(_identity, dataset);
@@ -120,7 +120,7 @@ namespace Lokad.Forecasting.Client
         /// Thrown if the access rights are incorrect, or if the service is down
         /// at the moment.
         /// </exception>
-        public IEnumerable<Dataset> ListDatasets()
+        public virtual IEnumerable<Dataset> ListDatasets()
         {
             DatasetCollection datasets = null;
 
@@ -151,7 +151,7 @@ namespace Lokad.Forecasting.Client
         /// <exception cref="InvalidOperationException">
         /// Thrown if the access rights are incorrect, or if the service is not available
         /// at the time.</exception>
-        public void DeleteDataset(string datasetName)
+        public virtual void DeleteDataset(string datasetName)
         {
             if (!datasetName.IsValidApiName())
             {
@@ -180,7 +180,7 @@ namespace Lokad.Forecasting.Client
         /// <exception cref="InvalidOperationException">
         /// Thrown if the access rights are incorrect, or if the service is not available
         /// at the time.</exception>
-        public void DeleteDatasetAndWait(string datasetName)
+        public virtual void DeleteDatasetAndWait(string datasetName)
         {
             DeleteDataset(datasetName);
 
@@ -219,7 +219,7 @@ namespace Lokad.Forecasting.Client
         /// Thrown if the access rights are incorrect, or if the service is not available
         /// at the time.</exception>
         /// <seealso cref="IForecastingApi.UpsertTimeSeries"/>
-        public void UpsertTimeSeries(string datasetName, TimeSerie[] timeSeries, bool enableMerge)
+        public virtual void UpsertTimeSeries(string datasetName, TimeSerie[] timeSeries, bool enableMerge)
         {
             // catching potential network timeouts
             RetryPolicy(() =>
@@ -321,7 +321,7 @@ namespace Lokad.Forecasting.Client
         /// Thrown if the access rights are incorrect, or if the dataset does not exists,
         /// or if the service is down.</exception>
         /// <seealso cref="IForecastingApi.ListTimeSeries"/>
-        public IEnumerable<TimeSerie> ListTimeSeries(string datasetName)
+        public virtual IEnumerable<TimeSerie> ListTimeSeries(string datasetName)
         {
             TimeSerieCollection timeSeries = null;
 
@@ -352,7 +352,7 @@ namespace Lokad.Forecasting.Client
         /// <exception cref="InvalidOperationException">Thrown if the access rights are not correct,
         /// of if dataset does not exist, or if the service is down.</exception>
         /// <seealso cref="IForecastingApi.DeleteTimeSeries"/>
-        public void DeleteTimeSeries(string datasetName, string[] serieNames)
+        public virtual void DeleteTimeSeries(string datasetName, string[] serieNames)
         {
             ValidateSerieNames(datasetName, serieNames);
 
@@ -375,7 +375,7 @@ namespace Lokad.Forecasting.Client
         /// forecasts are finally available.</remarks>
         /// <param name="datasetName">Targeted dataset.</param>
         /// <returns>Indicates whether the forecasts are ready.</returns>
-        public bool TriggerForecastCompute(string datasetName)
+        public virtual bool TriggerForecastCompute(string datasetName)
         {
             var status = _forecastingApi.GetForecastStatus(_identity, datasetName);
 
@@ -399,7 +399,7 @@ namespace Lokad.Forecasting.Client
         /// if the dataset does not exists, or if the service is down.</exception>
         /// <seealso cref="IForecastingApi.GetForecastStatus"/>
         /// <seealso cref="IForecastingApi.GetForecasts"/>
-        public ForecastSerie[] GetForecasts(string datasetName, string[] serieNames)
+        public virtual ForecastSerie[] GetForecasts(string datasetName, string[] serieNames)
         {
             // catching potential network timeouts
             return RetryPolicy(() => GetForecastsInternal(datasetName, serieNames));
@@ -420,7 +420,7 @@ namespace Lokad.Forecasting.Client
         /// if the dataset does not exists, or if the service is down.</exception>
         /// <seealso cref="IForecastingApi.GetForecastStatus"/>
         /// <seealso cref="IForecastingApi.GetForecasts"/>
-        public ForecastSerie[] GetForecasts(Dataset dataset, TimeSerie[] series)
+        public virtual ForecastSerie[] GetForecasts(Dataset dataset, TimeSerie[] series)
         {
             var serieNames = series.Select(s => s.Name).ToArray();
             var datasetName = dataset.Name;
