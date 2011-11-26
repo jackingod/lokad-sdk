@@ -15,9 +15,6 @@ using System.Xml.Serialization;
 
 namespace Lokad.Forecasting.Client
 {
-    /// <summary>
-    /// 
-    /// </summary>
     internal class LokadRequest
     {
         private string _identity;
@@ -76,8 +73,26 @@ namespace Lokad.Forecasting.Client
                 }
             }
 
-            using (var response = RetryPolicy(() => request.GetResponse()))
+            using (var response = RetryPolicy(request.GetResponse))
             {
+                var httpResponse = response as HttpWebResponse;
+                if (httpResponse != null)
+                {
+                    switch(httpResponse.StatusCode)
+                    {
+                        case HttpStatusCode.Unauthorized:
+                            throw new UnauthorizedAccessException(ErrorCodes.AuthenticationFailed);
+                        case HttpStatusCode.BadRequest:
+                            throw new ArgumentException(ErrorCodes.OutOfRangeInput);
+                        case HttpStatusCode.NotFound:
+                            throw new InvalidOperationException(ErrorCodes.DatasetNotFound);
+                        case HttpStatusCode.PreconditionFailed:
+                            throw new InvalidOperationException(ErrorCodes.InvalidDatasetState);
+                        case HttpStatusCode.InternalServerError:
+                            throw new InvalidOperationException(ErrorCodes.ServiceFailure);
+                    }
+                }
+
                 var output = response.GetResponseStream();
             
                 // accept compressed response stream

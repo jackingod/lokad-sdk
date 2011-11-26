@@ -2,6 +2,7 @@
 // Company: Lokad SAS, http://www.lokad.com/
 // This code is released under the terms of the new BSD licence
 #endregion
+
 using System;
 
 namespace Lokad.Forecasting.Client
