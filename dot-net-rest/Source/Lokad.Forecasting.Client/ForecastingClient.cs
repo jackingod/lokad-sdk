@@ -2,6 +2,7 @@
 // Company: Lokad SAS, http://www.lokad.com/
 // This code is released under the terms of the new BSD licence
 #endregion
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,7 +33,6 @@ namespace Lokad.Forecasting.Client
 
         readonly string _identity;
         readonly IForecastingApi _forecastingApi;
-        private bool _compressRequest;
 
         /// <summary>
         /// Gets the underlying API implementation.
@@ -80,7 +80,6 @@ namespace Lokad.Forecasting.Client
         public ForecastingClient(string identity, string endpoint, bool compressRequest = false)
         {
             _identity = identity;
-            _compressRequest = compressRequest;
             _forecastingApi = new ForecastingApi(endpoint, compressRequest);
         }
 
@@ -89,7 +88,6 @@ namespace Lokad.Forecasting.Client
         {
             _identity = identity;
             _forecastingApi = forecastingApi;
-            _compressRequest = compressRequest;
         }
 
         /// <summary>Insert a dataset into the Lokad account.</summary>
@@ -99,15 +97,17 @@ namespace Lokad.Forecasting.Client
         /// Thrown if the dataset is not compliant with 
         /// the Forecasting API restrictions.</exception>
         /// <exception cref="InvalidOperationException">
-        /// Thrown if don't have the correct access rights,
-        /// if the service happens to be down at the time.
+        /// Thrown if the service happens to be down at the time.
+        /// </exception>
+        /// <exception cref="UnauthorizedAccessException">
+        /// Thrown if the access rights are incorrect.
         /// </exception>
         /// <seealso cref="IForecastingApi.InsertDataset"/>
         public virtual void InsertDataset(Dataset dataset)
         {
             dataset.Validate();
             var errorCode = _forecastingApi.InsertDataset(_identity, dataset);
-            WrapAndThrow(errorCode);
+            LegacyWrapAndThrow(errorCode);
         }
 
         /// <summary>
@@ -117,8 +117,10 @@ namespace Lokad.Forecasting.Client
         /// Lazy enumeration, network requests happen as the set gets enumerated.
         /// </returns>
         /// <exception cref="InvalidOperationException">
-        /// Thrown if the access rights are incorrect, or if the service is down
-        /// at the moment.
+        /// Thrown if the service is down at the moment.
+        /// </exception>
+        /// <exception cref="UnauthorizedAccessException">
+        /// Thrown if the access rights are incorrect.
         /// </exception>
         public virtual IEnumerable<Dataset> ListDatasets()
         {
@@ -129,7 +131,7 @@ namespace Lokad.Forecasting.Client
                 datasets = _forecastingApi.ListDatasets(_identity,
                     datasets != null ? datasets.ContinuationToken : null);
 
-                WrapAndThrow(datasets.ErrorCode);
+                LegacyWrapAndThrow(datasets.ErrorCode);
 
                 foreach (var dataset in datasets.Datasets)
                 {
@@ -149,8 +151,11 @@ namespace Lokad.Forecasting.Client
         /// with the Forecasting API, or if the names are not distinct.
         /// </exception>
         /// <exception cref="InvalidOperationException">
-        /// Thrown if the access rights are incorrect, or if the service is not available
-        /// at the time.</exception>
+        /// Thrown if the service is not available at the time.
+        /// </exception>
+        /// <exception cref="UnauthorizedAccessException">
+        /// Thrown if the access rights are incorrect.
+        /// </exception>
         public virtual void DeleteDataset(string datasetName)
         {
             if (!datasetName.IsValidApiName())
@@ -160,7 +165,7 @@ namespace Lokad.Forecasting.Client
             }
 
             var errorCode = _forecastingApi.DeleteDataset(_identity, datasetName);
-            WrapAndThrow(errorCode);
+            LegacyWrapAndThrow(errorCode);
         }
 
         /// <summary>
@@ -178,20 +183,33 @@ namespace Lokad.Forecasting.Client
         /// with the Forecasting API, or if the names are not distinct.
         /// </exception>
         /// <exception cref="InvalidOperationException">
-        /// Thrown if the access rights are incorrect, or if the service is not available
-        /// at the time.</exception>
+        /// Thrown if the service is not available at the time.
+        /// </exception>
+        /// <exception cref="UnauthorizedAccessException">
+        /// Thrown if the access rights are incorrect.
+        /// </exception>
         public virtual void DeleteDatasetAndWait(string datasetName)
         {
             DeleteDataset(datasetName);
 
-            TimeSerieCollection collection;
             while (true)
             {
-                collection = _forecastingApi.ListTimeSeries(_identity, datasetName, null);
-
-                if (ErrorCodes.DatasetNotFound.Equals(collection.ErrorCode))
+                try
                 {
-                    break;
+                    var collection = _forecastingApi.ListTimeSeries(_identity, datasetName, null);
+                    if (ErrorCodes.DatasetNotFound.Equals(collection.ErrorCode))
+                    {
+                        return;
+                    }
+                }
+                catch (InvalidOperationException ex)
+                {
+                    if (ErrorCodes.DatasetNotFound.Equals(ex.Message))
+                    {
+                        return;
+                    }
+
+                    throw;
                 }
 
                 Thread.Sleep(30000);
@@ -216,8 +234,11 @@ namespace Lokad.Forecasting.Client
         /// <exception cref="ArgumentException">Throw if one of the argument is not compliant
         /// with the Forecasting API specification.</exception>
         /// <exception cref="InvalidOperationException">
-        /// Thrown if the access rights are incorrect, or if the service is not available
-        /// at the time.</exception>
+        /// Thrown if the service is not available  at the time.
+        /// </exception>
+        /// <exception cref="UnauthorizedAccessException">
+        /// Thrown if the access rights are incorrect.
+        /// </exception>
         /// <seealso cref="IForecastingApi.UpsertTimeSeries"/>
         public virtual void UpsertTimeSeries(string datasetName, TimeSerie[] timeSeries, bool enableMerge)
         {
@@ -239,7 +260,7 @@ namespace Lokad.Forecasting.Client
             }
 
             // Heuristic: intermediate zeroes can be pruned
-            timeSeries = timeSeries.Select(serie => PruneIntermediateZeroes(serie)).ToArray();
+            timeSeries = timeSeries.Select(PruneIntermediateZeroes).ToArray();
 
             // When uploading series toward Lokad, requests should not weight more than 4MB
             // Instead of trying to figure out complex corner situation, we just deal with
@@ -257,7 +278,7 @@ namespace Lokad.Forecasting.Client
                     _forecastingApi.UpsertTimeSeries(_identity, datasetName,
                         new[] { veryLargeSeries[i] }, enableMerge);
 
-                WrapAndThrow(errorCode);
+                LegacyWrapAndThrow(errorCode);
             }
 
             // large series are uploaded 10 by 10
@@ -268,7 +289,7 @@ namespace Lokad.Forecasting.Client
                     _forecastingApi.UpsertTimeSeries(_identity, datasetName,
                         largeSeries.Skip(i).Take(_midSeriesSliceLength).ToArray(), enableMerge);
 
-                WrapAndThrow(errorCode);
+                LegacyWrapAndThrow(errorCode);
             }
 
             // small series are uploaded 100 by 100
@@ -279,7 +300,7 @@ namespace Lokad.Forecasting.Client
                     _forecastingApi.UpsertTimeSeries(_identity, datasetName,
                         smallSeries.Skip(i).Take(_seriesSliceLength).ToArray(), enableMerge);
 
-                WrapAndThrow(errorCode);
+                LegacyWrapAndThrow(errorCode);
             }
         }
 
@@ -318,8 +339,11 @@ namespace Lokad.Forecasting.Client
         /// Thrown is the dataset name is not compliant with Forecasting API specification.
         /// </exception>
         /// <exception cref="InvalidOperationException">
-        /// Thrown if the access rights are incorrect, or if the dataset does not exists,
-        /// or if the service is down.</exception>
+        /// Thrown if the dataset does not exists, or if the service is down.
+        /// </exception>
+        /// <exception cref="UnauthorizedAccessException">
+        /// Thrown if the access rights are incorrect.
+        /// </exception>
         /// <seealso cref="IForecastingApi.ListTimeSeries"/>
         public virtual IEnumerable<TimeSerie> ListTimeSeries(string datasetName)
         {
@@ -330,7 +354,7 @@ namespace Lokad.Forecasting.Client
                 timeSeries = _forecastingApi.ListTimeSeries(_identity, datasetName,
                     timeSeries != null ? timeSeries.ContinuationToken : null);
 
-                WrapAndThrow(timeSeries.ErrorCode);
+                LegacyWrapAndThrow(timeSeries.ErrorCode);
 
                 foreach (var timeSerie in timeSeries.TimeSeries)
                 {
@@ -349,8 +373,12 @@ namespace Lokad.Forecasting.Client
         /// <exception cref="ArgumentNullException">Thrown if one of the argument is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the arguments are not compliant
         /// with the Forecasting API specification.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the access rights are not correct,
-        /// of if dataset does not exist, or if the service is down.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if dataset does not exist, or if the service is down.
+        /// </exception>
+        /// <exception cref="UnauthorizedAccessException">
+        /// Thrown if the access rights are incorrect.
+        /// </exception>
         /// <seealso cref="IForecastingApi.DeleteTimeSeries"/>
         public virtual void DeleteTimeSeries(string datasetName, string[] serieNames)
         {
@@ -363,7 +391,7 @@ namespace Lokad.Forecasting.Client
                     _forecastingApi.DeleteTimeSeries(_identity, datasetName,
                         serieNames.Skip(i).Take(_seriesSliceLength).ToArray());
 
-                WrapAndThrow(errorCode);
+                LegacyWrapAndThrow(errorCode);
             }
         }
 
@@ -374,12 +402,15 @@ namespace Lokad.Forecasting.Client
         /// <remarks>This method can be called many time until the
         /// forecasts are finally available.</remarks>
         /// <param name="datasetName">Targeted dataset.</param>
+        /// <exception cref="UnauthorizedAccessException">
+        /// Thrown if the access rights are incorrect.
+        /// </exception>
         /// <returns>Indicates whether the forecasts are ready.</returns>
         public virtual bool TriggerForecastCompute(string datasetName)
         {
             var status = _forecastingApi.GetForecastStatus(_identity, datasetName);
 
-            WrapAndThrow(status.ErrorCode);
+            LegacyWrapAndThrow(status.ErrorCode);
 
             return status.ForecastsReady;
         }
@@ -395,8 +426,12 @@ namespace Lokad.Forecasting.Client
         /// <exception cref="ArgumentNullException">Thrown if any of the argument is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the arguments are not compliant
         /// with the Forecasting API specification.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the access rights are incorrect,
-        /// if the dataset does not exists, or if the service is down.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the dataset does not exists, or if the service is down.
+        /// </exception>
+        /// <exception cref="UnauthorizedAccessException">
+        /// Thrown if the access rights are incorrect.
+        /// </exception>
         /// <seealso cref="IForecastingApi.GetForecastStatus"/>
         /// <seealso cref="IForecastingApi.GetForecasts"/>
         public virtual ForecastSerie[] GetForecasts(string datasetName, string[] serieNames)
@@ -416,8 +451,12 @@ namespace Lokad.Forecasting.Client
         /// <exception cref="ArgumentNullException">Thrown if any of the argument is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the arguments are not compliant
         /// with the Forecasting API specification.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the access rights are incorrect,
-        /// if the dataset does not exists, or if the service is down.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the dataset does not exists, or if the service is down.
+        /// </exception>
+        /// <exception cref="UnauthorizedAccessException">
+        /// Thrown if the access rights are incorrect.
+        /// </exception>
         /// <seealso cref="IForecastingApi.GetForecastStatus"/>
         /// <seealso cref="IForecastingApi.GetForecasts"/>
         public virtual ForecastSerie[] GetForecasts(Dataset dataset, TimeSerie[] series)
@@ -442,7 +481,7 @@ namespace Lokad.Forecasting.Client
 
                 status = _forecastingApi.GetForecastStatus(_identity, datasetName);
 
-                WrapAndThrow(status.ErrorCode);
+                LegacyWrapAndThrow(status.ErrorCode);
 
             } while (!status.ForecastsReady);
 
@@ -459,7 +498,7 @@ namespace Lokad.Forecasting.Client
                     _forecastingApi.GetForecasts(_identity, datasetName,
                         serieNames.Skip(i).Take(_forecastsSliceLength).ToArray());
 
-                WrapAndThrow(forecastCollection.ErrorCode);
+                LegacyWrapAndThrow(forecastCollection.ErrorCode);
 
                 foreach (var forecast in forecastCollection.Series)
                 {
@@ -496,7 +535,12 @@ namespace Lokad.Forecasting.Client
             }
         }
 
-        static void WrapAndThrow(string errorCode)
+        /// <remarks>
+        /// Throw in case error states are returned as Lokad error codes
+        /// instead of proper HTTP status codes. To be phased out in future
+        /// api upgrades.
+        /// </remarks>
+        static void LegacyWrapAndThrow(string errorCode)
         {
             // If error code is null or empty, then just ignore.
             if (string.IsNullOrEmpty(errorCode)) return;
@@ -504,7 +548,7 @@ namespace Lokad.Forecasting.Client
             switch (errorCode)
             {
                 case ErrorCodes.AuthenticationFailed:
-                    throw new InvalidOperationException(errorCode);
+                    throw new UnauthorizedAccessException(errorCode);
 
                 case ErrorCodes.DatasetNotFound:
                     throw new InvalidOperationException(errorCode);
@@ -525,7 +569,7 @@ namespace Lokad.Forecasting.Client
             }
         }
 
-        /// <summary>Ad-hoc retry policy for transcient network errors.</summary>
+        /// <summary>Ad-hoc retry policy for transient network errors.</summary>
         T RetryPolicy<T>(Func<T> webRequest)
         {
             const int maxAttempts = 10;
