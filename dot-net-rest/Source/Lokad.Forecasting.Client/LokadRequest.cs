@@ -75,24 +75,6 @@ namespace Lokad.Forecasting.Client
 
             using (var response = RetryPolicy(request.GetResponse))
             {
-                var httpResponse = response as HttpWebResponse;
-                if (httpResponse != null)
-                {
-                    switch(httpResponse.StatusCode)
-                    {
-                        case HttpStatusCode.Unauthorized:
-                            throw new UnauthorizedAccessException(ErrorCodes.AuthenticationFailed);
-                        case HttpStatusCode.BadRequest:
-                            throw new ArgumentException(ErrorCodes.OutOfRangeInput);
-                        case HttpStatusCode.NotFound:
-                            throw new InvalidOperationException(ErrorCodes.DatasetNotFound);
-                        case HttpStatusCode.PreconditionFailed:
-                            throw new InvalidOperationException(ErrorCodes.InvalidDatasetState);
-                        case HttpStatusCode.InternalServerError:
-                            throw new InvalidOperationException(ErrorCodes.ServiceFailure);
-                    }
-                }
-
                 var output = response.GetResponseStream();
             
                 // accept compressed response stream
@@ -124,7 +106,7 @@ namespace Lokad.Forecasting.Client
             }
         }
 
-        /// <summary>Ad-hoc retry policy for transient network errors.</summary>
+        /// <summary>Ad-hoc retry policy for transient errors.</summary>
         private static T RetryPolicy<T>(Func<T> webRequest)
         {
             const int maxAttempts = 10;
@@ -138,16 +120,24 @@ namespace Lokad.Forecasting.Client
                 }
                 catch (WebException ex)
                 {
-                    var statusCode =HttpStatusCode.InternalServerError;
+                    var statusCode = HttpStatusCode.InternalServerError;
                     if (ex.Response != null)
                     {
                         statusCode = ((HttpWebResponse)ex.Response).StatusCode;
                     }
+
+                    // Do not retry in the following cases
+                    switch (statusCode)
+                    {
+                        case HttpStatusCode.Unauthorized:
+                            throw new UnauthorizedAccessException(ex.Message);
+                        case HttpStatusCode.BadRequest:
+                            throw new ArgumentException(ErrorCodes.OutOfRangeInput);
+                        case HttpStatusCode.NotFound:
+                            throw new InvalidOperationException(ErrorCodes.DatasetNotFound);
+                    }
                     
-                    if (i < maxAttempts
-                        && statusCode != HttpStatusCode.Unauthorized
-                        && statusCode != HttpStatusCode.BadRequest
-                        && statusCode != HttpStatusCode.InternalServerError)
+                    if (i < maxAttempts)
                     {
                         // increasing sleep delay pattern
                         Thread.Sleep((i + 1) * 1000);
@@ -155,7 +145,15 @@ namespace Lokad.Forecasting.Client
                     else
                     {
                         // after 'maxAttempts' we give up
-                        throw;
+                        switch(statusCode)
+                        {
+                            case HttpStatusCode.PreconditionFailed:
+                                throw new InvalidOperationException(ErrorCodes.InvalidDatasetState);
+                            case HttpStatusCode.InternalServerError:
+                                throw new InvalidOperationException(ErrorCodes.ServiceFailure);
+                            default:
+                                throw;
+                        }
                     }
                 }
             }

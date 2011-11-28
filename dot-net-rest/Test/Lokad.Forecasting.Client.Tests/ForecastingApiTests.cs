@@ -23,6 +23,13 @@ namespace Lokad.Forecasting.Client.Tests
         }
 
         [Test]
+        [ExpectedException(typeof(UnauthorizedAccessException))]
+        public void AuthenticateWithInvalidCredentials()
+        {
+            _forecastingApi.ListDatasets("aW52YWxpZGNyZWRlbnRpYWw=", null);
+        }
+
+        [Test]
         public void InsertValidDataset()
         {
             var dataset = new Dataset
