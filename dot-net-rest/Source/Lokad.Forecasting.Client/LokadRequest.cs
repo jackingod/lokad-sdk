@@ -17,24 +17,28 @@ namespace Lokad.Forecasting.Client
 {
     internal class LokadRequest
     {
-        private string _identity;
-        private bool _compressRequest;
-
-        public static LokadRequest Create(string identity, bool compressRequest = false)
+        public static TResult Get<TResult>(string identity, string url)
+            where TResult : class
         {
-            return new LokadRequest
-                {
-                    _identity = Convert.ToBase64String(Encoding.ASCII.GetBytes("auth-with-key@lokad.com:" + identity)),
-                    _compressRequest = compressRequest
-                };
+            return Request<TResult>(identity, url, String.Empty, HttpMethod.Get, false);
         }
 
-        public TResult GetResponse<TResult>(string url, string content, string method) where TResult : class 
+        public static string Delete(string identity, string url)
+        {
+            return Request<string>(identity, url, String.Empty, HttpMethod.Delete, false);
+        }
+
+        public static string Put(string identity, string url, string content, bool compressRequest)
+        {
+            return Request<string>(identity, url, content, HttpMethod.Put, compressRequest);
+        }
+
+        static TResult Request<TResult>(string identity, string url, string content, string method, bool compressRequest) where TResult : class 
         {
             var request = (HttpWebRequest) WebRequest.Create(url);
             
             request.Method = method;
-            request.Headers.Add(HttpRequestHeader.Authorization, "Basic " + _identity);
+            request.Headers.Add(HttpRequestHeader.Authorization, "Basic " + Convert.ToBase64String(Encoding.ASCII.GetBytes("auth-with-key@lokad.com:" + identity)));
             request.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip");
             request.AllowAutoRedirect = false;
 
@@ -49,7 +53,7 @@ namespace Lokad.Forecasting.Client
 
                 var bytes = Encoding.ASCII.GetBytes(content);
 
-                if (_compressRequest)
+                if (compressRequest)
                 {
                     request.Headers.Add(HttpRequestHeader.ContentEncoding, "gzip");
 
