@@ -38,34 +38,26 @@ namespace Lokad.Forecasting.Client
                 new XElement("Period", dataset.Period),
                 new XElement("Horizon", dataset.Horizon));
 
-            var request = LokadRequest.Create(identity, _compressRequest);
-
-            return request.GetResponse<string>(url, document.ToString(), HttpMethod.Put);
+            return LokadRequest.Put(identity, url, document.ToString(), _compressRequest);
         }
 
         public DatasetCollection ListDatasets(string identity, string continuationToken)
         {
             var url = String.Format(@"{0}/datasets/{1}", _endpoint, continuationToken);
-            var request = LokadRequest.Create(identity);
-
-            return request.GetResponse<DatasetCollection>(url, String.Empty, HttpMethod.Get);
+            return LokadRequest.Get<DatasetCollection>(identity, url);
         }
 
         public string DeleteDataset(string identity, string datasetName)
         {
             var url = String.Format(@"{0}/datasets/{1}", _endpoint, datasetName);
-            var request = LokadRequest.Create(identity);
-
-            return request.GetResponse<string>(url, String.Empty, HttpMethod.Delete);
+            return LokadRequest.Delete(identity, url);
         }
 
         public string UpsertTimeSeries(string identity, string datasetName, TimeSerie[] timeSeries, bool enableMerge)
         {
             var url = _endpoint + "/series/" + datasetName + (enableMerge ? "?merge=true" : String.Empty);
 
-            var request = LokadRequest.Create(identity, _compressRequest);
-
-            var content1 = new XElement("TimeSeries");
+            var content = new XElement("TimeSeries");
             if (timeSeries.Any())
             {
                 foreach (var serie in timeSeries)
@@ -115,11 +107,11 @@ namespace Lokad.Forecasting.Client
 
                         timeserie.Add(values);
                     }
-                    content1.Add(timeserie);
+                    content.Add(timeserie);
                 }
             }
 
-            return request.GetResponse<string>(url, content1.ToString(), HttpMethod.Put);
+            return LokadRequest.Put(identity, url, content.ToString(), _compressRequest);
         }
 
         public TimeSerieCollection ListTimeSeries(string identity, string datasetName, string continuationToken)
@@ -127,33 +119,25 @@ namespace Lokad.Forecasting.Client
             var url = _endpoint + "/series/" + datasetName + (String.IsNullOrEmpty(continuationToken)
                           ? String.Empty
                           : "/" + continuationToken);
-            var request = LokadRequest.Create(identity, _compressRequest);
-
-            return request.GetResponse<TimeSerieCollection>(url, String.Empty, HttpMethod.Get);
+            return LokadRequest.Get<TimeSerieCollection>(identity, url);
         }
 
         public string DeleteTimeSeries(string identity, string datasetName, string[] serieNames)
         {
             var url = _endpoint + "/series/" + datasetName + "?n=" + String.Join(";", serieNames);
-            var request = LokadRequest.Create(identity);
-
-            return request.GetResponse<string>(url, String.Empty, HttpMethod.Delete);
+            return LokadRequest.Delete(identity, url);
         }
 
         public ForecastStatus GetForecastStatus(string identity, string datasetName)
         {
             var url = _endpoint + "/status/" + datasetName;
-            var request = LokadRequest.Create(identity);
-
-            return request.GetResponse<ForecastStatus>(url, String.Empty, HttpMethod.Get);
+            return LokadRequest.Get<ForecastStatus>(identity, url);
         }
 
         public ForecastCollection GetForecasts(string identity, string datasetName, string[] serieNames)
         {
             var url = _endpoint + "/forecasts/" + datasetName + "?n=" + String.Join(";", serieNames);
-            var request = LokadRequest.Create(identity);
-
-            return request.GetResponse<ForecastCollection>(url, String.Empty, HttpMethod.Get);
+            return LokadRequest.Get<ForecastCollection>(identity, url);
         }
 
         public string Endpoint
