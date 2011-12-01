@@ -17,26 +17,25 @@ namespace Lokad.Forecasting.Client
 {
     internal class LokadRequest
     {
-        public static TResult Get<TResult>(string identity, string url)
-            where TResult : class
+        public static TResult Get<TResult>(string identity, string url) where TResult : class
         {
-            return Request<TResult>(identity, url, String.Empty, HttpMethod.Get, false);
+            return GetResponse<TResult>(() => SendRequest(identity, url, String.Empty, HttpMethod.Get, false));
         }
 
         public static string Delete(string identity, string url)
         {
-            return Request<string>(identity, url, String.Empty, HttpMethod.Delete, false);
+            return GetResponse<string>(() => SendRequest(identity, url, String.Empty, HttpMethod.Delete, false));
         }
 
         public static string Put(string identity, string url, string content, bool compressRequest)
         {
-            return Request<string>(identity, url, content, HttpMethod.Put, compressRequest);
+            return GetResponse<string>(() => SendRequest(identity, url, content, HttpMethod.Put, compressRequest));
         }
 
-        static TResult Request<TResult>(string identity, string url, string content, string method, bool compressRequest) where TResult : class 
+        static WebResponse SendRequest(string identity, string url, string content, string method, bool compressRequest)
         {
-            var request = (HttpWebRequest) WebRequest.Create(url);
-            
+            var request = (HttpWebRequest)WebRequest.Create(url);
+
             request.Method = method;
             request.Headers.Add(HttpRequestHeader.Authorization, "Basic " + Convert.ToBase64String(Encoding.ASCII.GetBytes("auth-with-key@lokad.com:" + identity)));
             request.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip");
@@ -69,7 +68,7 @@ namespace Lokad.Forecasting.Client
 
                     // write data to request stream
                     var stream = request.GetRequestStream();
-                    stream.Write(ms.ToArray(), 0, (int) ms.Length);
+                    stream.Write(ms.ToArray(), 0, (int)ms.Length);
                     stream.Close();
                 }
                 else
@@ -82,10 +81,15 @@ namespace Lokad.Forecasting.Client
                 }
             }
 
-            using (var response = RetryPolicy(request.GetResponse))
+            return request.GetResponse();
+        }
+
+        static TResult GetResponse<TResult>(Func<WebResponse> sendRequest) where TResult : class
+        {
+            using (var response = RetryPolicy(sendRequest))
             {
                 var output = response.GetResponseStream();
-            
+
                 // accept compressed response stream
                 var contentEncoding = response.Headers[HttpResponseHeader.ContentEncoding];
                 if (!string.IsNullOrEmpty(contentEncoding))
