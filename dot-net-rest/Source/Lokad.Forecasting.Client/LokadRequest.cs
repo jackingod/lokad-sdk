@@ -23,10 +23,10 @@ namespace Lokad.Forecasting.Client
         public static LokadRequest Create(string identity, bool compressRequest = false)
         {
             return new LokadRequest
-                       {
-                           _identity = Convert.ToBase64String(Encoding.ASCII.GetBytes("auth-with-key@lokad.com:" + identity)),
-                           _compressRequest = compressRequest
-                       };
+                {
+                    _identity = Convert.ToBase64String(Encoding.ASCII.GetBytes("auth-with-key@lokad.com:" + identity)),
+                    _compressRequest = compressRequest
+                };
         }
 
         public TResult GetResponse<TResult>(string url, string content, string method) where TResult : class 
@@ -35,6 +35,7 @@ namespace Lokad.Forecasting.Client
             
             request.Method = method;
             request.Headers.Add(HttpRequestHeader.Authorization, "Basic " + _identity);
+            request.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip");
             request.AllowAutoRedirect = false;
 
             if (String.IsNullOrEmpty(content))
@@ -47,8 +48,6 @@ namespace Lokad.Forecasting.Client
                 request.ContentType = "application/xml";
 
                 var bytes = Encoding.ASCII.GetBytes(content);
-
-                request.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip");
 
                 if (_compressRequest)
                 {
