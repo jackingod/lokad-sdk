@@ -35,13 +35,19 @@ namespace Lokad.Forecasting.Client
             
             request.Method = method;
             request.Headers.Add(HttpRequestHeader.Authorization, "Basic " + _identity);
-            
-            if (!String.IsNullOrEmpty(content))
+            request.AllowAutoRedirect = false;
+
+            if (String.IsNullOrEmpty(content))
             {
+                request.ServicePoint.Expect100Continue = false;
+            }
+            else
+            {
+                request.ServicePoint.Expect100Continue = true;
                 request.ContentType = "application/xml";
-                
+
                 var bytes = Encoding.ASCII.GetBytes(content);
-                
+
                 request.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip");
 
                 if (_compressRequest)

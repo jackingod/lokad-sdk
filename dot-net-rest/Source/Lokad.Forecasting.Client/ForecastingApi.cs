@@ -5,6 +5,7 @@
 
 using System;
 using System.Linq;
+using System.Net;
 using System.Xml.Linq;
 
 namespace Lokad.Forecasting.Client
@@ -22,6 +23,10 @@ namespace Lokad.Forecasting.Client
             if (String.IsNullOrEmpty(endpoint)) throw new ArgumentNullException("endpoint");
             _endpoint = endpoint;
             _compressRequest = compressRequest;
+
+            ServicePointManager.DefaultConnectionLimit = Math.Max(32, ServicePointManager.DefaultConnectionLimit);
+            ServicePointManager.MaxServicePoints = Math.Max(32, ServicePointManager.MaxServicePoints);
+            // Expect100Continue is chosen on per-request level, do not set it here
         }
 
         public string InsertDataset(string identity, Dataset dataset)
