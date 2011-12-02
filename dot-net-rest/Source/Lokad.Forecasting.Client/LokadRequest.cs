@@ -134,14 +134,14 @@ namespace Lokad.Forecasting.Client
                 }
                 catch (WebException ex)
                 {
-                    var statusCode = HttpStatusCode.InternalServerError;
+                    var httpStatusCode = HttpStatusCode.Unused;
                     if (ex.Response != null)
                     {
-                        statusCode = ((HttpWebResponse)ex.Response).StatusCode;
+                        httpStatusCode = ((HttpWebResponse)ex.Response).StatusCode;
                     }
 
                     // Do not retry in the following cases
-                    switch (statusCode)
+                    switch (httpStatusCode)
                     {
                         case HttpStatusCode.Unauthorized:
                             throw new UnauthorizedAccessException(ex.Message);
@@ -159,15 +159,21 @@ namespace Lokad.Forecasting.Client
                     else
                     {
                         // after 'maxAttempts' we give up
-                        switch(statusCode)
+                        switch(httpStatusCode)
                         {
                             case HttpStatusCode.PreconditionFailed:
                                 throw new InvalidOperationException(ErrorCodes.InvalidDatasetState);
                             case HttpStatusCode.InternalServerError:
                                 throw new InvalidOperationException(ErrorCodes.ServiceFailure);
-                            default:
-                                throw;
                         }
+
+                        switch(ex.Status)
+                        {
+                            case WebExceptionStatus.Timeout:
+                                throw new TimeoutException(ex.Message);
+                        }
+
+                        throw;
                     }
                 }
             }

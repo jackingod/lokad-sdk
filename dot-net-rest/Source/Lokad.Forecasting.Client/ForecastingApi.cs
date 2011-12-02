@@ -26,8 +26,8 @@ namespace Lokad.Forecasting.Client
             TimeoutMs = timeoutMs;
             ReadWriteTimeoutMs = readWriteTimeoutMs;
 
-            ServicePointManager.DefaultConnectionLimit = Math.Max(32, ServicePointManager.DefaultConnectionLimit);
-            ServicePointManager.MaxServicePoints = Math.Max(32, ServicePointManager.MaxServicePoints);
+            ServicePointManager.DefaultConnectionLimit = Math.Max(16, ServicePointManager.DefaultConnectionLimit);
+            ServicePointManager.MaxServicePoints = Math.Max(16, ServicePointManager.MaxServicePoints);
             // Expect100Continue is chosen per request, so we do not set it here
         }
 
