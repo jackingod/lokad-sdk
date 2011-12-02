@@ -27,7 +27,7 @@ namespace Lokad.Forecasting.Client
             return GetResponse<string>(() => SendRequest(identity, url, String.Empty, HttpMethod.Delete, false, timeoutMs, readWriteTimeoutMs));
         }
 
-        public static string Put(string identity, string url, string content, bool compressRequest, int timeoutMs = 100000, int readWriteTimeoutMs = 300000)
+        public static string Put(string identity, string url, string content, bool compressRequest = true, int timeoutMs = 100000, int readWriteTimeoutMs = 300000)
         {
             return GetResponse<string>(() => SendRequest(identity, url, content, HttpMethod.Put, compressRequest, timeoutMs, readWriteTimeoutMs));
         }
