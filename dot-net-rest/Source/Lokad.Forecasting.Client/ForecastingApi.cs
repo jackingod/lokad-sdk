@@ -18,7 +18,7 @@ namespace Lokad.Forecasting.Client
         private readonly string _endpoint;
         private readonly bool _compressRequest;
 
-        public ForecastingApi(string endpoint, bool compressRequest = false, int timeoutMs = 100000, int readWriteTimeoutMs = 300000)
+        public ForecastingApi(string endpoint, bool compressRequest = true, int timeoutMs = 100000, int readWriteTimeoutMs = 300000)
         {
             if (String.IsNullOrEmpty(endpoint)) throw new ArgumentNullException("endpoint");
             _endpoint = endpoint;
