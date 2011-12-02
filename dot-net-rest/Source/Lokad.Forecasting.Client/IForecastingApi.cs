@@ -278,10 +278,20 @@ namespace Lokad.Forecasting.Client
         /// </returns>
         ForecastCollection GetForecasts(string identity, string datasetName, string[] serieNames);
 
-		/// <summary>
-		/// Endpoint URL to which this API is connected
-		/// </summary>
-    	string Endpoint { get; }
+        /// <summary>
+        /// Endpoint URL to which this API is connected
+        /// </summary>
+        string Endpoint { get; }
+
+        /// <summary>
+        /// Timeout in ms, default is 100 seconds (100000 ms)
+        /// </summary>
+        int TimeoutMs { get; set; }
+
+        /// <summary>
+        /// Read-write timeout in ms, default is 5 minutes (300000 ms)
+        /// </summary>
+        int ReadWriteTimeoutMs { get; set; }
     }
 
     /// <summary>Gather error codes as returned by Forecasting API v3.</summary>

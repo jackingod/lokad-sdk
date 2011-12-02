@@ -18,15 +18,24 @@ namespace Lokad.Forecasting.Client
         private readonly string _endpoint;
         private readonly bool _compressRequest;
 
-        public ForecastingApi(string endpoint, bool compressRequest = false)
+        public ForecastingApi(string endpoint, bool compressRequest = false, int timeoutMs = 100000, int readWriteTimeoutMs = 300000)
         {
             if (String.IsNullOrEmpty(endpoint)) throw new ArgumentNullException("endpoint");
             _endpoint = endpoint;
             _compressRequest = compressRequest;
+            TimeoutMs = timeoutMs;
+            ReadWriteTimeoutMs = readWriteTimeoutMs;
 
             ServicePointManager.DefaultConnectionLimit = Math.Max(32, ServicePointManager.DefaultConnectionLimit);
             ServicePointManager.MaxServicePoints = Math.Max(32, ServicePointManager.MaxServicePoints);
-            // Expect100Continue is chosen on per-request level, do not set it here
+            // Expect100Continue is chosen per request, so we do not set it here
+        }
+
+        public int TimeoutMs { get; set; }
+        public int ReadWriteTimeoutMs { get; set; }
+        public string Endpoint
+        {
+            get { return _endpoint; }
         }
 
         public string InsertDataset(string identity, Dataset dataset)
@@ -44,13 +53,13 @@ namespace Lokad.Forecasting.Client
         public DatasetCollection ListDatasets(string identity, string continuationToken)
         {
             var url = String.Format(@"{0}/datasets/{1}", _endpoint, continuationToken);
-            return LokadRequest.Get<DatasetCollection>(identity, url);
+            return LokadRequest.Get<DatasetCollection>(identity, url, TimeoutMs, ReadWriteTimeoutMs);
         }
 
         public string DeleteDataset(string identity, string datasetName)
         {
             var url = String.Format(@"{0}/datasets/{1}", _endpoint, datasetName);
-            return LokadRequest.Delete(identity, url);
+            return LokadRequest.Delete(identity, url, TimeoutMs, ReadWriteTimeoutMs);
         }
 
         public string UpsertTimeSeries(string identity, string datasetName, TimeSerie[] timeSeries, bool enableMerge)
@@ -111,7 +120,7 @@ namespace Lokad.Forecasting.Client
                 }
             }
 
-            return LokadRequest.Put(identity, url, content.ToString(), _compressRequest);
+            return LokadRequest.Put(identity, url, content.ToString(), _compressRequest, TimeoutMs, ReadWriteTimeoutMs);
         }
 
         public TimeSerieCollection ListTimeSeries(string identity, string datasetName, string continuationToken)
@@ -119,30 +128,25 @@ namespace Lokad.Forecasting.Client
             var url = _endpoint + "/series/" + datasetName + (String.IsNullOrEmpty(continuationToken)
                           ? String.Empty
                           : "/" + continuationToken);
-            return LokadRequest.Get<TimeSerieCollection>(identity, url);
+            return LokadRequest.Get<TimeSerieCollection>(identity, url, TimeoutMs, ReadWriteTimeoutMs);
         }
 
         public string DeleteTimeSeries(string identity, string datasetName, string[] serieNames)
         {
             var url = _endpoint + "/series/" + datasetName + "?n=" + String.Join(";", serieNames);
-            return LokadRequest.Delete(identity, url);
+            return LokadRequest.Delete(identity, url, TimeoutMs, ReadWriteTimeoutMs);
         }
 
         public ForecastStatus GetForecastStatus(string identity, string datasetName)
         {
             var url = _endpoint + "/status/" + datasetName;
-            return LokadRequest.Get<ForecastStatus>(identity, url);
+            return LokadRequest.Get<ForecastStatus>(identity, url, TimeoutMs, ReadWriteTimeoutMs);
         }
 
         public ForecastCollection GetForecasts(string identity, string datasetName, string[] serieNames)
         {
             var url = _endpoint + "/forecasts/" + datasetName + "?n=" + String.Join(";", serieNames);
-            return LokadRequest.Get<ForecastCollection>(identity, url);
-        }
-
-        public string Endpoint
-        {
-            get { return _endpoint; }
+            return LokadRequest.Get<ForecastCollection>(identity, url, TimeoutMs, ReadWriteTimeoutMs);
         }
     }
 }

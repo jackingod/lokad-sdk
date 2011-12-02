@@ -47,8 +47,10 @@ namespace Lokad.Forecasting.Client
         /// <summary>Create a new client to access a Lokad account.</summary>
         /// <param name="identity">Authentication key to access the Lokad account.</param>
         /// <param name="compressRequest">Use gzip compression of the request stream.</param>
+        /// <param name="timeoutMs">Request timeout in ms, default is 100 seconds (100000 ms)</param>
+        /// <param name="readWriteTimeoutMs">Request read-write timeout in ms, default is 5 minutes (300000 ms)</param>
         /// <remarks>The URL endpoint of the service is inferred from the key.</remarks>
-        public ForecastingClient(string identity, bool compressRequest = false)
+        public ForecastingClient(string identity, bool compressRequest = false, int timeoutMs = 100000, int readWriteTimeoutMs = 300000)
         {
             // Validating the format of the key.
             byte[] bytes;
@@ -68,23 +70,24 @@ namespace Lokad.Forecasting.Client
             }
 
             _identity = identity;
-            
-            _forecastingApi = new ForecastingApi(ProductionEndpoint, compressRequest);
+            _forecastingApi = new ForecastingApi(ProductionEndpoint, compressRequest, timeoutMs, readWriteTimeoutMs);
         }
 
         /// <summary>Create a new client to access a Lokad account.</summary>
         /// <param name="identity">Authentication key to access the Lokad account.</param>
         /// <param name="endpoint"></param>
         /// <param name="compressRequest">Use gzip compression of the request stream.</param>
+        /// <param name="timeoutMs">Request timeout in ms, default is 100 seconds (100000 ms)</param>
+        /// <param name="readWriteTimeoutMs">Request read-write timeout in ms, default is 5 minutes (300000 ms)</param>
         /// <remarks>The URL endpoint of the service is inferred from the key.</remarks>
-        public ForecastingClient(string identity, string endpoint, bool compressRequest = false)
+        public ForecastingClient(string identity, string endpoint, bool compressRequest = false, int timeoutMs = 100000, int readWriteTimeoutMs = 300000)
         {
             _identity = identity;
-            _forecastingApi = new ForecastingApi(endpoint, compressRequest);
+            _forecastingApi = new ForecastingApi(endpoint, compressRequest, timeoutMs, readWriteTimeoutMs);
         }
 
         /// <summary>Access to the underlying client implementation.</summary>
-        public ForecastingClient(string identity, IForecastingApi forecastingApi, bool compressRequest = false)
+        public ForecastingClient(string identity, IForecastingApi forecastingApi)
         {
             _identity = identity;
             _forecastingApi = forecastingApi;
