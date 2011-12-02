@@ -17,22 +17,22 @@ namespace Lokad.Forecasting.Client
 {
     internal class LokadRequest
     {
-        public static TResult Get<TResult>(string identity, string url) where TResult : class
+        public static TResult Get<TResult>(string identity, string url, int timeoutMs = 100000, int readWriteTimeoutMs = 300000) where TResult : class
         {
-            return GetResponse<TResult>(() => SendRequest(identity, url, String.Empty, HttpMethod.Get, false));
+            return GetResponse<TResult>(() => SendRequest(identity, url, String.Empty, HttpMethod.Get, false, timeoutMs, readWriteTimeoutMs));
         }
 
-        public static string Delete(string identity, string url)
+        public static string Delete(string identity, string url, int timeoutMs = 100000, int readWriteTimeoutMs = 300000)
         {
-            return GetResponse<string>(() => SendRequest(identity, url, String.Empty, HttpMethod.Delete, false));
+            return GetResponse<string>(() => SendRequest(identity, url, String.Empty, HttpMethod.Delete, false, timeoutMs, readWriteTimeoutMs));
         }
 
-        public static string Put(string identity, string url, string content, bool compressRequest)
+        public static string Put(string identity, string url, string content, bool compressRequest, int timeoutMs = 100000, int readWriteTimeoutMs = 300000)
         {
-            return GetResponse<string>(() => SendRequest(identity, url, content, HttpMethod.Put, compressRequest));
+            return GetResponse<string>(() => SendRequest(identity, url, content, HttpMethod.Put, compressRequest, timeoutMs, readWriteTimeoutMs));
         }
 
-        static WebResponse SendRequest(string identity, string url, string content, string method, bool compressRequest)
+        static WebResponse SendRequest(string identity, string url, string content, string method, bool compressRequest, int timeoutMs, int readWriteTimeoutMs)
         {
             var request = (HttpWebRequest)WebRequest.Create(url);
 
@@ -40,6 +40,8 @@ namespace Lokad.Forecasting.Client
             request.Headers.Add(HttpRequestHeader.Authorization, "Basic " + Convert.ToBase64String(Encoding.ASCII.GetBytes("auth-with-key@lokad.com:" + identity)));
             request.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip");
             request.AllowAutoRedirect = false;
+            request.Timeout = timeoutMs;
+            request.ReadWriteTimeout = readWriteTimeoutMs;
 
             if (String.IsNullOrEmpty(content))
             {
@@ -86,7 +88,7 @@ namespace Lokad.Forecasting.Client
 
         static TResult GetResponse<TResult>(Func<WebResponse> sendRequest) where TResult : class
         {
-            using (var response = RetryPolicy(sendRequest))
+            using (var response = Retry(sendRequest))
             {
                 var output = response.GetResponseStream();
 
@@ -119,8 +121,7 @@ namespace Lokad.Forecasting.Client
             }
         }
 
-        /// <summary>Ad-hoc retry policy for transient errors.</summary>
-        private static T RetryPolicy<T>(Func<T> webRequest)
+        static T Retry<T>(Func<T> webRequest)
         {
             const int maxAttempts = 10;
 
