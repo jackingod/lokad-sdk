@@ -19,7 +19,7 @@ namespace Lokad.Forecasting.Client.Tests
         public void Setup()
         {
             // Current version of forecasting API v3 cannot process compressed requests.
-            _forecastingApi = new ForecastingApi(Endpoint, false);
+            _forecastingApi = new ForecastingApi(Endpoint);
         }
 
         [Test]
@@ -52,9 +52,9 @@ namespace Lokad.Forecasting.Client.Tests
                 Horizon = 60,
                 Period = "millennium"
             };
-            var errorCode = _forecastingApi.InsertDataset(Identity, dataset);
 
-            Assert.AreEqual(ErrorCodes.OutOfRangeInput, errorCode);
+            var exception = Assert.Throws<ArgumentException>(() => _forecastingApi.InsertDataset(Identity, dataset));
+            Assert.AreEqual(ErrorCodes.OutOfRangeInput, exception.Message);
         }
 
         [Test]
@@ -66,9 +66,9 @@ namespace Lokad.Forecasting.Client.Tests
                 Horizon = 60,
                 Period = PeriodCodes.Week
             };
-            var errorCode = _forecastingApi.InsertDataset(Identity, dataset);
 
-            Assert.AreEqual(ErrorCodes.OutOfRangeInput, errorCode);
+            var exception = Assert.Throws<ArgumentException>(() => _forecastingApi.InsertDataset(Identity, dataset));
+            Assert.AreEqual(ErrorCodes.OutOfRangeInput, exception.Message);
         }
 
         [Test]
