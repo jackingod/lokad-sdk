@@ -15,7 +15,7 @@ namespace Lokad.Forecasting.Client
 
         readonly static string[] IntraDayPeriods = new[] { PeriodCodes.QuarterHour, PeriodCodes.HalfHour, PeriodCodes.Hour };
         readonly static string[] AllPeriods = new[] { PeriodCodes.QuarterHour, PeriodCodes.HalfHour, PeriodCodes.Hour,
-													  PeriodCodes.Day, PeriodCodes.Week, PeriodCodes.Month};
+                                                      PeriodCodes.Day, PeriodCodes.Week, PeriodCodes.Month};
 
         public static bool IsValidApiName(this string name)
         {
@@ -83,6 +83,18 @@ namespace Lokad.Forecasting.Client
             if (!timeSerie.Name.IsValidApiName())
             {
                 throw new ArgumentException("TimeSerie name is not valid.", "timeSerie");
+            }
+
+            // 'Tau' validaton
+            if (timeSerie.Tau.HasValue && !timeSerie.Tau.Value.Equals(0.0f) && (timeSerie.Tau.Value < 0.001f || timeSerie.Tau.Value > 0.999f))
+            {
+                throw new ArgumentException("TimeSerie Tau must either not be set or between (inclusive) 0.001 and 0.999.", "timeSerie");
+            }
+
+            // 'Lambda' validation
+            if (timeSerie.Lambda.HasValue && !timeSerie.Lambda.Value.Equals(0.0f) && (timeSerie.Lambda.Value < 1f || timeSerie.Lambda.Value > 336f))
+            {
+                throw new ArgumentException("TimeSerie Lambda must either not be set or between (inclusive) 1 and 336.", "timeSerie");
             }
 
             // 'Tags' validation

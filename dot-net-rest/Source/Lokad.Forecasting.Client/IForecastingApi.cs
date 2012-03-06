@@ -279,6 +279,74 @@ namespace Lokad.Forecasting.Client
         ForecastCollection GetForecasts(string identity, string datasetName, string[] serieNames);
 
         /// <summary>
+        /// Call this method once, just after finishing uploading
+        /// you updated series. The first call to this method triggers the 
+        /// forecast computation. Then, routinely call this method every
+        /// minute or so to detect when the forecasts are available
+        /// to be retrieved.
+        /// </summary>
+        /// <param name="identity">Authentication keys.</param>
+        /// <param name="datasetName">Targeted dataset.</param>
+        /// <remarks>
+        /// <para>
+        /// The following error codes can be returned (if any):
+        /// <ul>
+        ///   <li>AuthenticationFailed</li>
+        ///   <li>OutOfRangeInput</li>
+        ///   <li>DatasetNotFound</li>
+        ///   <li>InvalidDatasetState</li>
+        ///   <li>ServiceFailure</li>
+        /// </ul>
+        /// </para>
+        /// </remarks>
+        /// <returns>
+        /// The status of the forecast computation. When forecasts
+        /// are indicated as ready, the method <c>GetForecasts</c>
+        /// can be called.
+        /// 
+        /// The following error codes can be returned (if any) through
+        /// the value of <c>ForecastStatus.ErrorCode</c>:
+        /// <ul>
+        ///   <li>AuthenticationFailed</li>
+        ///   <li>OutOfRangeInput</li>
+        ///   <li>DatasetNotFound</li>
+        ///   <li>InvalidDatasetState</li>
+        ///   <li>ServiceFailure</li>
+        /// </ul>
+        /// </returns>
+        ForecastStatus GetQuantileStatus(string identity, string datasetName);
+
+        /// <summary>
+        /// Retrieves the forecasts from a dataset of a Lokad account.
+        /// </summary>
+        /// <param name="identity">Authentication key.</param>
+        /// <param name="datasetName">Targeted dataset.</param>
+        /// <param name="serieNames">
+        /// Name of the forecasted series. No more than 100 forecasted
+        /// series could be retrieved at once. If a serie cannot be found,
+        /// it will be ignored, and no corresponding forecast will
+        /// be returned.
+        /// </param>
+        /// <remarks>
+        /// <para>The size of the response should not exceed 4MB, otherwise
+        /// the call will fail. If response exceed 4MB, we suggest to retrieve
+        /// fewer series at once.
+        /// </para>
+        /// </remarks>
+        /// <returns>
+        /// A collection of forecasts matching the serie names passed
+        /// as argument. The following error codes can be returned (if any):
+        /// <ul>
+        ///   <li>AuthenticationFailed</li>
+        ///   <li>OutOfRangeInput</li>
+        ///   <li>DatasetNotFound</li>
+        ///   <li>InvalidDatasetState</li>
+        ///   <li>ServiceFailure</li>
+        /// </ul>
+        /// </returns>
+        QuantileCollection GetQuantiles(string identity, string datasetName, string[] serieNames);
+
+        /// <summary>
         /// Endpoint URL to which this API is connected
         /// </summary>
         string Endpoint { get; }
@@ -372,6 +440,12 @@ namespace Lokad.Forecasting.Client
         public string Name { get; set; }
 
         /// <remarks></remarks>
+        public float? Tau { get; set; }
+
+        /// <remarks></remarks>
+        public float? Lambda { get; set; }
+
+        /// <remarks></remarks>
         public string[] Tags { get; set; }
 
         /// <remarks></remarks>
@@ -412,14 +486,14 @@ namespace Lokad.Forecasting.Client
     /// <seealso cref="IForecastingApi.UpsertTimeSeries"/>
     public class EventValue
     {
-        /// <remarks></remarks>
-        public string[] Tags { get; set; }
-
         /// <summary>Starting date of the event.</summary>
         public DateTime Time { get; set; }
 
         /// <summary>Original discovery date of the event.</summary>
         public DateTime KnownSince { get; set; }
+
+        /// <remarks></remarks>
+        public string[] Tags { get; set; }
 
         public override string ToString()
         {
@@ -468,5 +542,25 @@ namespace Lokad.Forecasting.Client
 
         /// <summary>Percentage expressed as a value between 0 and 1.</summary>
         public double Accuracy { get; set; }
+    }
+
+    /// <seealso cref="IForecastingApi.GetQuantiles"/>
+    public class QuantileCollection
+    {
+        /// <remarks></remarks>
+        public QuantileValue[] Quantiles { get; set; }
+
+        /// <remarks></remarks>
+        public string ErrorCode { get; set; }
+    }
+
+    /// <seealso cref="IForecastingApi.GetQuantiles"/>
+    public class QuantileValue
+    {
+        /// <summary>Name of the time-serie being forecasted.</summary>
+        public string Name { get; set; }
+
+        /// <summary>Forecasted quantile value.</summary>
+        public double Value { get; set; }
     }
 }

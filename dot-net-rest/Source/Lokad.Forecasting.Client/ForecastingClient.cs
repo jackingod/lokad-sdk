@@ -418,6 +418,26 @@ namespace Lokad.Forecasting.Client
             return status.ForecastsReady;
         }
 
+        /// <summary>Trigger the quantile forecast computation. No need to 
+        /// call this method (<see cref="GetQuantiles"/>) unless
+        /// you want to avoid your <c>GetQuantiles</c> call being 
+        /// blocked waiting.</summary>
+        /// <remarks>This method can be called many time until the
+        /// forecasts are finally available.</remarks>
+        /// <param name="datasetName">Targeted dataset.</param>
+        /// <exception cref="UnauthorizedAccessException">
+        /// Thrown if the access rights are incorrect.
+        /// </exception>
+        /// <returns>Indicates whether the forecasts are ready.</returns>
+        public virtual bool TriggerQuantileCompute(string datasetName)
+        {
+            var status = _forecastingApi.GetQuantileStatus(_identity, datasetName);
+
+            LegacyWrapAndThrow(status.ErrorCode);
+
+            return status.ForecastsReady;
+        }
+
         /// <summary>
         /// Gets the forecasts from a specified datasets.
         /// </summary>
@@ -441,6 +461,31 @@ namespace Lokad.Forecasting.Client
         {
             // catching potential network timeouts
             return RetryPolicy(() => GetForecastsInternal(datasetName, serieNames));
+        }
+
+        /// <summary>
+        /// Gets the quantile forecasts from a specified datasets.
+        /// </summary>
+        /// <param name="datasetName">Targeted dataset.</param>
+        /// <param name="serieNames">Targeted series. Series that do not
+        /// exists in the targeted dataset are ignored.</param>
+        /// <remark>Call is blocking until the forecasts are ready
+        /// and downloaded.</remark>
+        /// <exception cref="ArgumentNullException">Thrown if any of the argument is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the arguments are not compliant
+        /// with the Forecasting API specification.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the dataset does not exists, or if the service is down.
+        /// </exception>
+        /// <exception cref="UnauthorizedAccessException">
+        /// Thrown if the access rights are incorrect.
+        /// </exception>
+        /// <seealso cref="IForecastingApi.GetForecastStatus"/>
+        /// <seealso cref="IForecastingApi.GetForecasts"/>
+        public virtual QuantileValue[] GetQuantiles(string datasetName, string[] serieNames)
+        {
+            // catching potential network timeouts
+            return RetryPolicy(() => GetQuantilesInternal(datasetName, serieNames));
         }
 
         /// <summary>
@@ -468,6 +513,33 @@ namespace Lokad.Forecasting.Client
             var datasetName = dataset.Name;
             // catching potential network timeouts)
             return RetryPolicy(() => GetForecastsInternal(datasetName, serieNames));
+        }
+
+        /// <summary>
+        /// Gets the quantile forecasts from a specified datasets.
+        /// </summary>
+        /// <param name="dataset">Targeted dataset.</param>
+        /// <param name="series">Targeted series. Series that do not
+        /// exists in the targeted dataset are ignored.</param>
+        /// <remark>Call is blocking until the forecasts are ready
+        /// and downloaded.</remark>
+        /// <exception cref="ArgumentNullException">Thrown if any of the argument is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the arguments are not compliant
+        /// with the Forecasting API specification.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the dataset does not exists, or if the service is down.
+        /// </exception>
+        /// <exception cref="UnauthorizedAccessException">
+        /// Thrown if the access rights are incorrect.
+        /// </exception>
+        /// <seealso cref="IForecastingApi.GetForecastStatus"/>
+        /// <seealso cref="IForecastingApi.GetForecasts"/>
+        public virtual QuantileValue[] GetQuantiles(Dataset dataset, TimeSerie[] series)
+        {
+            var serieNames = series.Select(s => s.Name).ToArray();
+            var datasetName = dataset.Name;
+            // catching potential network timeouts)
+            return RetryPolicy(() => GetQuantilesInternal(datasetName, serieNames));
         }
 
         ForecastSerie[] GetForecastsInternal(string datasetName, string[] serieNames)
@@ -512,6 +584,50 @@ namespace Lokad.Forecasting.Client
             // Ordering the results before returning them.
             // (not necessary, but simplifies the debugging)
             return serieNames.Where(forecasts.ContainsKey).Select(n => forecasts[n]).ToArray();
+        }
+
+        QuantileValue[] GetQuantilesInternal(string datasetName, string[] serieNames)
+        {
+            ValidateSerieNames(datasetName, serieNames);
+
+            ForecastStatus status = null;
+            do
+            {
+                if (null != status)
+                {
+                    Thread.Sleep(10 * 1000); // 10s sleep between checks while waiting for the forecasts
+                }
+
+                status = _forecastingApi.GetQuantileStatus(_identity, datasetName);
+
+                LegacyWrapAndThrow(status.ErrorCode);
+
+            } while (!status.ForecastsReady);
+
+            var quantiles = new Dictionary<string, QuantileValue>(serieNames.Length);
+
+            // A subtle situation may arise if the forecasts are so large that
+            // they can't be retrieved in batches of 50 while still be compliant
+            // with 4MB limitation.
+
+            for (var i = 0; i < serieNames.Length; i += _forecastsSliceLength)
+            {
+                // No 'Slice()' method available 
+                var quantileCollection =
+                    _forecastingApi.GetQuantiles(_identity, datasetName,
+                        serieNames.Skip(i).Take(_forecastsSliceLength).ToArray());
+
+                LegacyWrapAndThrow(quantileCollection.ErrorCode);
+
+                foreach (var quantile in quantileCollection.Quantiles)
+                {
+                    quantiles.Add(quantile.Name, quantile);
+                }
+            }
+
+            // Ordering the results before returning them.
+            // (not necessary, but simplifies the debugging)
+            return serieNames.Where(quantiles.ContainsKey).Select(n => quantiles[n]).ToArray();
         }
 
         static void ValidateSerieNames(string datasetName, string[] serieNames)

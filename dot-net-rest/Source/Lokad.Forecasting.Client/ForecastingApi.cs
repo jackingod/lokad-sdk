@@ -72,6 +72,17 @@ namespace Lokad.Forecasting.Client
                 foreach (var serie in timeSeries)
                 {
                     var timeserie = new XElement("TimeSerie", new XElement("Name", serie.Name));
+
+                    if (serie.Tau.HasValue && serie.Tau.Value > 0f)
+                    {
+                        timeserie.Add(new XElement("Tau", serie.Tau.Value));
+                    }
+
+                    if (serie.Lambda.HasValue && serie.Lambda.Value > 0f)
+                    {
+                        timeserie.Add(new XElement("Lambda", serie.Lambda.Value));
+                    }
+                    
                     if (serie.Tags != null && serie.Tags.Any())
                     {
                         var tags = new XElement("Tags");
@@ -147,6 +158,18 @@ namespace Lokad.Forecasting.Client
         {
             var url = _endpoint + "/forecasts/" + datasetName + "?n=" + String.Join(";", serieNames);
             return LokadRequest.Get<ForecastCollection>(identity, url, TimeoutMs, ReadWriteTimeoutMs);
+        }
+
+        public ForecastStatus GetQuantileStatus(string identity, string datasetName)
+        {
+            var url = _endpoint + "/qstatus/" + datasetName;
+            return LokadRequest.Get<ForecastStatus>(identity, url, TimeoutMs, ReadWriteTimeoutMs);
+        }
+
+        public QuantileCollection GetQuantiles(string identity, string datasetName, string[] serieNames)
+        {
+            var url = _endpoint + "/quantiles/" + datasetName + "?n=" + String.Join(";", serieNames);
+            return LokadRequest.Get<QuantileCollection>(identity, url, TimeoutMs, ReadWriteTimeoutMs);
         }
     }
 }
