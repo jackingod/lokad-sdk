@@ -161,6 +161,9 @@ namespace Lokad.Forecasting.Client.Tests
                 
                 CollectionAssert.AreEqual(exp.Values.Select(s => s.ToString()).ToArray(), actual.Values.Select(s => s.ToString()).ToArray(), "Values are equal");
                 CollectionAssert.AreEqual(exp.Events.Select(s => s.ToString()).ToArray(), actual.Events.Select(s => s.ToString()).ToArray(), "Events are equal");
+
+                Assert.AreEqual(exp.Tau, actual.Tau);
+                Assert.AreEqual(exp.Lambda, actual.Lambda);
             }
         }
 
@@ -275,19 +278,26 @@ namespace Lokad.Forecasting.Client.Tests
             for (int i = 0; i < array.Length; i++)
             {
                 array[i] = new TimeSerie
-                               {
-                                   Name = "t" + i,
-                                   Values = new[] {new TimeValue {Time = new DateTime(2001, 1, 1).AddDays(i), Value = i}},
-                                   Tags = new [] {"T" + i},
-                                   Events = new[] { new EventValue()
-                                                        {
-                                                            Tags = new[] {"foo" + i},
-                                                            KnownSince = new DateTime(2001, 1, 1).AddDays(i),
-                                                            Time = new DateTime(2001, 1, 1).AddDays(i)
-                                                        }, }
+                    {
+                        Name = "t" + i,
+                        Values = new[] { new TimeValue { Time = new DateTime(2001, 1, 1).AddDays(i), Value = i } },
+                        Tags = new[] { "T" + i },
+                        Events = new[]
+                            {
+                                new EventValue
+                                    {
+                                        Tags = new[] { "foo" + i },
+                                        KnownSince = new DateTime(2001, 1, 1).AddDays(i),
+                                        Time = new DateTime(2001, 1, 1).AddDays(i)
+                                    },
+                            }
+                    };
 
-                               }
-                               ;
+                if (i % 2 == 1)
+                {
+                    array[i].Lambda = 3f;
+                    array[i].Tau = 0.95f;
+                }
             }
             return array;
         }
