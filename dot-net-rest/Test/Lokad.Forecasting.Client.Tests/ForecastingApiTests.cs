@@ -34,7 +34,7 @@ namespace Lokad.Forecasting.Client.Tests
         {
             var dataset = new Dataset
                               {
-                                  Name = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
+                                  Name = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
                                   Horizon = 60,
                                   Period = PeriodCodes.Week
                               };
@@ -48,7 +48,7 @@ namespace Lokad.Forecasting.Client.Tests
         {
             var dataset = new Dataset
             {
-                Name = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
+                Name = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
                 Horizon = 60,
                 Period = "millennium"
             };
@@ -76,7 +76,7 @@ namespace Lokad.Forecasting.Client.Tests
         {
             var dataset = new Dataset
             {
-                Name = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
+                Name = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
                 Horizon = 60,
                 Period = PeriodCodes.Week
             };
@@ -93,7 +93,7 @@ namespace Lokad.Forecasting.Client.Tests
         public void DeleteDatasetTest()
         {
             // insert test dataset
-            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
+            var dataSetName = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
             {
                 Name = dataSetName,
@@ -113,7 +113,7 @@ namespace Lokad.Forecasting.Client.Tests
         public void UpsertTimeSeriesTest()
         {
             // insert test dataset
-            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
+            var dataSetName = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
             {
                 Name = dataSetName,
@@ -134,7 +134,7 @@ namespace Lokad.Forecasting.Client.Tests
         public void Data_round_trip()
         {
             // insert test dataset
-            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
+            var dataSetName = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
             {
                 Name = dataSetName,
@@ -171,7 +171,7 @@ namespace Lokad.Forecasting.Client.Tests
         public void ListTimeSeriesTest()
         {
              // insert test dataset
-            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
+            var dataSetName = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
             {
                 Name = dataSetName,
@@ -191,7 +191,7 @@ namespace Lokad.Forecasting.Client.Tests
         public void DeleteTimeSeriesTest()
         {
             // insert test dataset
-            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
+            var dataSetName = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
             {
                 Name = dataSetName,
@@ -212,10 +212,11 @@ namespace Lokad.Forecasting.Client.Tests
         }
 
         [Test]
+        [Ignore("Causes a flow to run. Run it if really need to test Lokad service.")]
         public void GetForecastsStatusTest()
         {
             // insert test dataset
-            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
+            var dataSetName = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
             {
                 Name = dataSetName,
@@ -239,7 +240,7 @@ namespace Lokad.Forecasting.Client.Tests
         public void GetForecastsTest()
         {
             // insert test dataset
-            var dataSetName = "AYZ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
+            var dataSetName = "SDKIntTestF" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
             {
                 Name = dataSetName,
@@ -253,23 +254,63 @@ namespace Lokad.Forecasting.Client.Tests
 
             _forecastingApi.UpsertTimeSeries(Identity, dataset.Name, timeseries, false);
 
-            var forecastStatus =  _forecastingApi.GetForecastStatus(Identity, dataset.Name);
+            var forecastStatus = _forecastingApi.GetForecastStatus(Identity, dataset.Name);
             // wait forecast
             while (!forecastStatus.ForecastsReady)
             {
-                forecastStatus =  _forecastingApi.GetForecastStatus(Identity, dataset.Name);
+                forecastStatus = _forecastingApi.GetForecastStatus(Identity, dataset.Name);
                 Debug.WriteLine("Forecasts is not ready. Waiting...");
                 Thread.Sleep(5000);
             }
 
-            var forecastCollection = 
-                _forecastingApi.GetForecasts(Identity, 
-                                             dataset.Name,
-                                             timeseries.Take(10).Select(t => t.Name).ToArray());
-            
+            var forecastCollection =
+                _forecastingApi.GetForecasts(
+                    Identity,
+                    dataset.Name,
+                    timeseries.Take(10).Select(t => t.Name).ToArray());
+
             Assert.IsTrue(forecastStatus.ForecastsReady);
             Assert.IsTrue(String.IsNullOrEmpty(forecastCollection.ErrorCode));
-            Assert.IsTrue(forecastCollection.Series.Length>0);
+            Assert.IsTrue(forecastCollection.Series.Length > 0);
+        }
+
+        [Test]
+        [Ignore("Long test. Run it if really need to test Lokad service.")]
+        public void GetQuantilesTest()
+        {
+            // insert test dataset
+            var dataSetName = "SDKIntTestQ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
+            var dataset = new Dataset
+            {
+                Name = dataSetName,
+                Horizon = 10,
+                Period = "week"
+            };
+
+            _forecastingApi.InsertDataset(Identity, dataset);
+
+            var timeseries = GetTimeSeries(100);
+
+            _forecastingApi.UpsertTimeSeries(Identity, dataset.Name, timeseries, false);
+
+            var quantileStatus = _forecastingApi.GetQuantileStatus(Identity, dataset.Name);
+            // wait forecast
+            while (!quantileStatus.ForecastsReady)
+            {
+                quantileStatus = _forecastingApi.GetQuantileStatus(Identity, dataset.Name);
+                Debug.WriteLine("Quantiles is not ready. Waiting...");
+                Thread.Sleep(5000);
+            }
+
+            var forecastCollection =
+                _forecastingApi.GetQuantiles(
+                    Identity,
+                    dataset.Name,
+                    timeseries.Take(10).Select(t => t.Name).ToArray());
+
+            Assert.IsTrue(quantileStatus.ForecastsReady);
+            Assert.IsTrue(String.IsNullOrEmpty(forecastCollection.ErrorCode));
+            Assert.IsTrue(forecastCollection.Quantiles.Length > 0);
         }
 
         private static TimeSerie[] GetTimeSeries(int count)
@@ -280,7 +321,7 @@ namespace Lokad.Forecasting.Client.Tests
                 array[i] = new TimeSerie
                     {
                         Name = "t" + i,
-                        Values = new[] { new TimeValue { Time = new DateTime(2001, 1, 1).AddDays(i), Value = i } },
+                        Values = GetTimeValues(20, i, 0.3 * i),
                         Tags = new[] { "T" + i },
                         Events = new[]
                             {
@@ -293,11 +334,22 @@ namespace Lokad.Forecasting.Client.Tests
                             }
                     };
 
-                if (i % 2 == 1)
+                if (i % 4 > 0)
                 {
-                    array[i].Lambda = 3f;
+                    array[i].Lambda = 14f;
                     array[i].Tau = 0.95f;
                 }
+            }
+            return array;
+        }
+
+        private static TimeValue[] GetTimeValues(int count, int dayOffset, double phaseOffset)
+        {
+            var array = new TimeValue[count];
+            var baseDay = new DateTime(2001, 1, 1).AddDays(dayOffset);
+            for (int i = 0; i < array.Length; i++)
+            {
+                array[i] = new TimeValue { Time = baseDay.AddDays(7*i), Value = 100 * (1 + Math.Sin(phaseOffset + (0.2 * i))) };
             }
             return array;
         }
