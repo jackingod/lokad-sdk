@@ -561,6 +561,6 @@ namespace Lokad.Forecasting.Client
         public string Name { get; set; }
 
         /// <summary>Forecasted quantile value.</summary>
-        public double Value { get; set; }
+        public int Value { get; set; }
     }
 }
