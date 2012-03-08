@@ -11,7 +11,7 @@ namespace Lokad.Forecasting.Client.Tests
     {
         // identity format "API KEY"
         private const string Identity = "32h7sAEATW0ohaw3OXstys/P45YqwzUIx6BRPCk=";
-        private const string Endpoint = "http://api.lokad.com/rest/forecasting3";//http://localhost:50764/rest/forecasting3.svc";//
+        private const string Endpoint = "http://api.lokad.com/rest/forecasting3";
 
         private IForecastingApi _forecastingApi;
 
