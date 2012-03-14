@@ -325,7 +325,9 @@ namespace Lokad.Forecasting.Client
                      values.Take(1)
                     .Union(values.Skip(1).Take(values.Length - 2).Where(tv => tv.Value != 0.0))
                     .Union(values.Skip(values.Length - 1)).
-                    ToArray()
+                    ToArray(),
+                Tau = timeSerie.Tau,
+                Lambda = timeSerie.Lambda
             };
         }
 
