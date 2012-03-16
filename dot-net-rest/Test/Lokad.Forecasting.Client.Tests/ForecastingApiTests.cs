@@ -302,15 +302,66 @@ namespace Lokad.Forecasting.Client.Tests
                 Thread.Sleep(5000);
             }
 
-            var forecastCollection =
+            var quantileCollection =
                 _forecastingApi.GetQuantiles(
                     Identity,
                     dataset.Name,
                     timeseries.Take(10).Select(t => t.Name).ToArray());
 
             Assert.IsTrue(quantileStatus.ForecastsReady);
+            Assert.IsTrue(String.IsNullOrEmpty(quantileCollection.ErrorCode));
+            Assert.IsTrue(quantileCollection.Quantiles.Length > 0);
+        }
+
+        [Test]
+        [Ignore("Long test. Run it if really need to test Lokad service.")]
+        public void GetForecastsAndQuantilesTest()
+        {
+            // insert test dataset
+            var dataSetName = "SDKIntTestFQ" + DateTime.Now.ToString("yyyyMMddHHmmssffff");
+            var dataset = new Dataset
+            {
+                Name = dataSetName,
+                Horizon = 10,
+                Period = "week"
+            };
+
+            _forecastingApi.InsertDataset(Identity, dataset);
+
+            var timeseries = GetTimeSeries(100);
+
+            _forecastingApi.UpsertTimeSeries(Identity, dataset.Name, timeseries, false);
+
+            var forecastStatus = _forecastingApi.GetForecastStatus(Identity, dataset.Name);
+            var quantileStatus = _forecastingApi.GetQuantileStatus(Identity, dataset.Name);
+            // wait forecast
+            while (!quantileStatus.ForecastsReady || !forecastStatus.ForecastsReady)
+            {
+                forecastStatus = _forecastingApi.GetForecastStatus(Identity, dataset.Name);
+                quantileStatus = _forecastingApi.GetQuantileStatus(Identity, dataset.Name);
+                Debug.WriteLine("Not ready (F={0}, Q={1}). Waiting...", forecastStatus.ForecastsReady, quantileStatus.ForecastsReady);
+                Thread.Sleep(5000);
+            }
+
+            var forecastCollection =
+                _forecastingApi.GetForecasts(
+                    Identity,
+                    dataset.Name,
+                    timeseries.Take(10).Select(t => t.Name).ToArray());
+
+            Assert.IsTrue(forecastStatus.ForecastsReady);
             Assert.IsTrue(String.IsNullOrEmpty(forecastCollection.ErrorCode));
-            Assert.IsTrue(forecastCollection.Quantiles.Length > 0);
+            Assert.IsTrue(forecastCollection.Series.Length > 0);
+
+            var quantileCollection =
+                _forecastingApi.GetQuantiles(
+                    Identity,
+                    dataset.Name,
+                    timeseries.Take(10).Select(t => t.Name).ToArray());
+
+            Assert.IsTrue(quantileStatus.ForecastsReady);
+            Assert.IsTrue(String.IsNullOrEmpty(quantileCollection.ErrorCode));
+            Assert.IsTrue(quantileCollection.Quantiles.Length > 0);
         }
 
         private static TimeSerie[] GetTimeSeries(int count)
