@@ -92,9 +92,9 @@ namespace Lokad.Forecasting.Client
             }
 
             // 'Lambda' validation
-            if (timeSerie.Lambda.HasValue && !timeSerie.Lambda.Value.Equals(0.0f) && (timeSerie.Lambda.Value < 1f || timeSerie.Lambda.Value > 336f))
+            if (timeSerie.Lambda.HasValue && !timeSerie.Lambda.Value.Equals(0.0f) && (timeSerie.Lambda.Value < 1f || timeSerie.Lambda.Value > 366f))
             {
-                throw new ArgumentException("TimeSerie Lambda must either not be set or between (inclusive) 1 and 336.", "timeSerie");
+                throw new ArgumentException("TimeSerie Lambda must either not be set or between (inclusive) 1 and 366.", "timeSerie");
             }
 
             // 'Tags' validation
