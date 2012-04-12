@@ -47,6 +47,11 @@ namespace Lokad.Forecasting.Client
                 new XElement("Period", dataset.Period),
                 new XElement("Horizon", dataset.Horizon));
 
+            if (dataset.Threshold.HasValue && dataset.Threshold.Value != default(DateTime))
+            {
+                document.Add(new XElement("Threshold", dataset.Threshold.Value));
+            }
+
             return LokadRequest.Put(identity, url, document.ToString(), _compressRequest);
         }
 

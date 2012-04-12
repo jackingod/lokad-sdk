@@ -57,7 +57,7 @@ namespace Lokad.Forecasting.Client
             }
             else if(PeriodCodes.Day == dataset.Period)
             {
-                if(dataset.Horizon <= 0 || dataset.Horizon > 400)
+                if (dataset.Horizon <= 0 || dataset.Horizon > 400)
                 {
                     throw new ArgumentOutOfRangeException("dataset", "Horizon should be comprised between 1 and 400.");
                 }
@@ -69,6 +69,12 @@ namespace Lokad.Forecasting.Client
                 {
                     throw new ArgumentOutOfRangeException("dataset", "Horizon should be comprised between 1 and 100.");
                 }
+            }
+
+            // 'Threshold' validation
+            if (dataset.Threshold.HasValue && (dataset.Threshold.Value < new DateTime(1990, 1, 1) || dataset.Threshold.Value > DateTime.Now.AddMonths(1)))
+            {
+                throw new ArgumentOutOfRangeException("dataset", "Threshold is set but out of range.");
             }
         }
 

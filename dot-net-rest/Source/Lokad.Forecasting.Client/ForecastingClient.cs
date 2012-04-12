@@ -671,6 +671,9 @@ namespace Lokad.Forecasting.Client
                 case ErrorCodes.AuthenticationFailed:
                     throw new UnauthorizedAccessException(errorCode);
 
+                case ErrorCodes.AuthorizationFailed:
+                    throw new UnauthorizedAccessException(errorCode);
+
                 case ErrorCodes.DatasetNotFound:
                     throw new InvalidOperationException(errorCode);
 

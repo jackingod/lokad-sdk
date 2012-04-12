@@ -83,14 +83,31 @@ namespace Lokad.Forecasting.Client.Tests
                     Period = PeriodCodes.Week
                 };
 
+            var datasetW = new Dataset
+                {
+                    Name = "SDKIntTestW" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
+                    Horizon = 60,
+                    Period = PeriodCodes.Week,
+                    Threshold = DateTime.UtcNow
+                };
+
             _forecastingApi.InsertDataset(Identity, dataset);
+            _forecastingApi.InsertDataset(Identity, datasetW);
 
             var datasetCollection = _forecastingApi.ListDatasets(Identity, String.Empty);
-
             Assert.IsEmpty(datasetCollection.ErrorCode);
-            Assert.IsTrue(0 < datasetCollection.Datasets.Length);
+
+            var ret = datasetCollection.Datasets.SingleOrDefault(d => d.Name == dataset.Name);
+            Assert.NotNull(ret);
+            Assert.IsFalse(ret.Threshold.HasValue);
+
+            var retW = datasetCollection.Datasets.SingleOrDefault(d => d.Name == datasetW.Name);
+            Assert.NotNull(retW);
+            Assert.IsTrue(retW.Threshold.HasValue);
+            Assert.AreEqual(datasetW.Threshold.Value.ToUniversalTime(), retW.Threshold.Value.ToUniversalTime());
 
             _forecastingApi.DeleteDataset(Identity, dataset.Name);
+            _forecastingApi.DeleteDataset(Identity, datasetW.Name);
         }
 
         [Test]

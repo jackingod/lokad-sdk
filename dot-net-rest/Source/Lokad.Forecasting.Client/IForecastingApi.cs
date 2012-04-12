@@ -421,6 +421,8 @@ namespace Lokad.Forecasting.Client
 
         /// <remarks></remarks>
         public int Horizon { get; set; }
+
+        public DateTime? Threshold { get; set; }
     }
 
     /// <seealso cref="IForecastingApi.ListDatasets"/>
