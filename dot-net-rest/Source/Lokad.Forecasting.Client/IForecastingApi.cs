@@ -368,6 +368,9 @@ namespace Lokad.Forecasting.Client
         /// <summary>Invalid authentication key.</summary>
         public const string AuthenticationFailed = "AuthenticationFailed";
 
+        /// <summary>Not authorized (e.g. locked account).</summary>
+        public const string AuthorizationFailed = "NotAuthorized";
+
         /// <summary>Strings are expected to be in <c>^[a-zA-Z0-9]{1,32}$</c>,
         /// and arrays comes with length constraints too.</summary>
         public const string OutOfRangeInput = "OutOfRangeInput";

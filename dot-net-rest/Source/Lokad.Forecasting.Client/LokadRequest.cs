@@ -144,7 +144,9 @@ namespace Lokad.Forecasting.Client
                     switch (httpStatusCode)
                     {
                         case HttpStatusCode.Unauthorized:
-                            throw new UnauthorizedAccessException(ex.Message);
+                            throw new UnauthorizedAccessException(ErrorCodes.AuthenticationFailed);
+                        case HttpStatusCode.Forbidden:
+                            throw new UnauthorizedAccessException(ErrorCodes.AuthorizationFailed);
                         case HttpStatusCode.BadRequest:
                             throw new ArgumentException(ErrorCodes.OutOfRangeInput);
                         case HttpStatusCode.NotFound:
