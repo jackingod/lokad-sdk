@@ -33,25 +33,27 @@ namespace Lokad.Forecasting.Client.Tests
         public void InsertValidDataset()
         {
             var dataset = new Dataset
-                              {
-                                  Name = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
-                                  Horizon = 60,
-                                  Period = PeriodCodes.Week
-                              };
+                {
+                    Name = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
+                    Horizon = 60,
+                    Period = PeriodCodes.Week
+                };
             var errorCode = _forecastingApi.InsertDataset(Identity, dataset);
 
             Assert.IsEmpty(errorCode);
+
+            _forecastingApi.DeleteDataset(Identity, dataset.Name);
         }
 
         [Test]
         public void InsertDatasetWithWrongPeriod()
         {
             var dataset = new Dataset
-            {
-                Name = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
-                Horizon = 60,
-                Period = "millennium"
-            };
+                {
+                    Name = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
+                    Horizon = 60,
+                    Period = "millennium"
+                };
 
             var exception = Assert.Throws<ArgumentException>(() => _forecastingApi.InsertDataset(Identity, dataset));
             Assert.AreEqual(ErrorCodes.OutOfRangeInput, exception.Message);
@@ -61,11 +63,11 @@ namespace Lokad.Forecasting.Client.Tests
         public void InsertDatasetWithLongName()
         {
             var dataset = new Dataset
-            {
-                Name = "Dataset".PadLeft(1024,'d'),
-                Horizon = 60,
-                Period = PeriodCodes.Week
-            };
+                {
+                    Name = "Dataset".PadLeft(1024, 'd'),
+                    Horizon = 60,
+                    Period = PeriodCodes.Week
+                };
 
             var exception = Assert.Throws<ArgumentException>(() => _forecastingApi.InsertDataset(Identity, dataset));
             Assert.AreEqual(ErrorCodes.OutOfRangeInput, exception.Message);
@@ -75,11 +77,11 @@ namespace Lokad.Forecasting.Client.Tests
         public void ListDatasetsTest()
         {
             var dataset = new Dataset
-            {
-                Name = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
-                Horizon = 60,
-                Period = PeriodCodes.Week
-            };
+                {
+                    Name = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
+                    Horizon = 60,
+                    Period = PeriodCodes.Week
+                };
 
             _forecastingApi.InsertDataset(Identity, dataset);
 
@@ -87,24 +89,26 @@ namespace Lokad.Forecasting.Client.Tests
 
             Assert.IsEmpty(datasetCollection.ErrorCode);
             Assert.IsTrue(0 < datasetCollection.Datasets.Length);
+
+            _forecastingApi.DeleteDataset(Identity, dataset.Name);
         }
 
         [Test]
         public void DeleteDatasetTest()
         {
             // insert test dataset
-            var dataSetName = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
+            var datasetName = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
-            {
-                Name = dataSetName,
-                Horizon = 60,
-                Period = "week"
-            };
+                {
+                    Name = datasetName,
+                    Horizon = 60,
+                    Period = "week"
+                };
 
             _forecastingApi.InsertDataset(Identity, dataset);
 
             // delete test dataset
-            var errorCode =_forecastingApi.DeleteDataset(Identity, dataSetName);
+            var errorCode =_forecastingApi.DeleteDataset(Identity, datasetName);
 
             Assert.IsTrue(String.IsNullOrEmpty(errorCode));
         }
@@ -113,13 +117,12 @@ namespace Lokad.Forecasting.Client.Tests
         public void UpsertTimeSeriesTest()
         {
             // insert test dataset
-            var dataSetName = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
-            {
-                Name = dataSetName,
-                Horizon = 60,
-                Period = PeriodCodes.Week
-            };
+                {
+                    Name = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
+                    Horizon = 60,
+                    Period = PeriodCodes.Week
+                };
 
             _forecastingApi.InsertDataset(Identity, dataset);
 
@@ -128,19 +131,20 @@ namespace Lokad.Forecasting.Client.Tests
             var errorCode = _forecastingApi.UpsertTimeSeries(Identity, dataset.Name, timeseries, false);
 
             Assert.IsEmpty(errorCode);
+
+            _forecastingApi.DeleteDataset(Identity, dataset.Name);
         }
 
         [Test]
         public void Data_round_trip()
         {
             // insert test dataset
-            var dataSetName = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
-            {
-                Name = dataSetName,
-                Horizon = 60,
-                Period = PeriodCodes.Week
-            };
+                {
+                    Name = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
+                    Horizon = 60,
+                    Period = PeriodCodes.Week
+                };
 
             _forecastingApi.InsertDataset(Identity, dataset);
 
@@ -165,19 +169,20 @@ namespace Lokad.Forecasting.Client.Tests
                 Assert.AreEqual(exp.Tau, actual.Tau);
                 Assert.AreEqual(exp.Lambda, actual.Lambda);
             }
+
+            _forecastingApi.DeleteDataset(Identity, dataset.Name);
         }
 
         [Test]
         public void ListTimeSeriesTest()
         {
              // insert test dataset
-            var dataSetName = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
-            {
-                Name = dataSetName,
-                Horizon = 60,
-                Period = PeriodCodes.Week
-            };
+                {
+                    Name = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
+                    Horizon = 60,
+                    Period = PeriodCodes.Week
+                };
 
             _forecastingApi.InsertDataset(Identity, dataset);
 
@@ -191,13 +196,12 @@ namespace Lokad.Forecasting.Client.Tests
         public void DeleteTimeSeriesTest()
         {
             // insert test dataset
-            var dataSetName = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
-            {
-                Name = dataSetName,
-                Horizon = 60,
-                Period = PeriodCodes.Week
-            };
+                {
+                    Name = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
+                    Horizon = 60,
+                    Period = PeriodCodes.Week
+                };
 
             _forecastingApi.InsertDataset(Identity, dataset);
 
@@ -206,9 +210,11 @@ namespace Lokad.Forecasting.Client.Tests
             _forecastingApi.UpsertTimeSeries(Identity, dataset.Name, timeseries, false);
 
             var errorCode = _forecastingApi.DeleteTimeSeries(Identity, dataset.Name,
-                                                             timeseries.Take(10).Select(t => t.Name).ToArray());
+                timeseries.Take(10).Select(t => t.Name).ToArray());
 
             Assert.IsEmpty(errorCode);
+
+            _forecastingApi.DeleteDataset(Identity, dataset.Name);
         }
 
         [Test]
@@ -216,13 +222,12 @@ namespace Lokad.Forecasting.Client.Tests
         public void GetForecastsStatusTest()
         {
             // insert test dataset
-            var dataSetName = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
-            {
-                Name = dataSetName,
-                Horizon = 10,
-                Period = PeriodCodes.Week
-            };
+                {
+                    Name = "SDKIntTest" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
+                    Horizon = 10,
+                    Period = PeriodCodes.Week
+                };
 
             _forecastingApi.InsertDataset(Identity, dataset);
 
@@ -231,8 +236,10 @@ namespace Lokad.Forecasting.Client.Tests
             _forecastingApi.UpsertTimeSeries(Identity, dataset.Name, timeseries, false);
 
             var forecastStatus =  _forecastingApi.GetForecastStatus(Identity, dataset.Name);
-            
+
             Assert.IsTrue(String.IsNullOrEmpty(forecastStatus.ErrorCode));
+
+            _forecastingApi.DeleteDataset(Identity, dataset.Name);
         }
 
         [Test]
@@ -240,13 +247,12 @@ namespace Lokad.Forecasting.Client.Tests
         public void GetForecastsTest()
         {
             // insert test dataset
-            var dataSetName = "SDKIntTestF" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
-            {
-                Name = dataSetName,
-                Horizon = 10,
-                Period = "week"
-            };
+                {
+                    Name = "SDKIntTestF" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
+                    Horizon = 10,
+                    Period = "week"
+                };
 
             _forecastingApi.InsertDataset(Identity, dataset);
 
@@ -272,6 +278,8 @@ namespace Lokad.Forecasting.Client.Tests
             Assert.IsTrue(forecastStatus.ForecastsReady);
             Assert.IsTrue(String.IsNullOrEmpty(forecastCollection.ErrorCode));
             Assert.IsTrue(forecastCollection.Series.Length > 0);
+
+            _forecastingApi.DeleteDataset(Identity, dataset.Name);
         }
 
         [Test]
@@ -279,13 +287,12 @@ namespace Lokad.Forecasting.Client.Tests
         public void GetQuantilesTest()
         {
             // insert test dataset
-            var dataSetName = "SDKIntTestQ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff");
             var dataset = new Dataset
-            {
-                Name = dataSetName,
-                Horizon = 10,
-                Period = "week"
-            };
+                {
+                    Name = "SDKIntTestQ" + DateTime.Now.ToString("yyyyMMddHHmmssfffff"),
+                    Horizon = 10,
+                    Period = "week"
+                };
 
             _forecastingApi.InsertDataset(Identity, dataset);
 
@@ -311,6 +318,8 @@ namespace Lokad.Forecasting.Client.Tests
             Assert.IsTrue(quantileStatus.ForecastsReady);
             Assert.IsTrue(String.IsNullOrEmpty(quantileCollection.ErrorCode));
             Assert.IsTrue(quantileCollection.Quantiles.Length > 0);
+
+            _forecastingApi.DeleteDataset(Identity, dataset.Name);
         }
 
         [Test]
@@ -318,13 +327,12 @@ namespace Lokad.Forecasting.Client.Tests
         public void GetForecastsAndQuantilesTest()
         {
             // insert test dataset
-            var dataSetName = "SDKIntTestFQ" + DateTime.Now.ToString("yyyyMMddHHmmssffff");
             var dataset = new Dataset
-            {
-                Name = dataSetName,
-                Horizon = 10,
-                Period = "week"
-            };
+                {
+                    Name = "SDKIntTestFQ" + DateTime.Now.ToString("yyyyMMddHHmmssffff"),
+                    Horizon = 10,
+                    Period = "week"
+                };
 
             _forecastingApi.InsertDataset(Identity, dataset);
 
@@ -362,6 +370,8 @@ namespace Lokad.Forecasting.Client.Tests
             Assert.IsTrue(quantileStatus.ForecastsReady);
             Assert.IsTrue(String.IsNullOrEmpty(quantileCollection.ErrorCode));
             Assert.IsTrue(quantileCollection.Quantiles.Length > 0);
+
+            _forecastingApi.DeleteDataset(Identity, dataset.Name);
         }
 
         private static TimeSerie[] GetTimeSeries(int count)
